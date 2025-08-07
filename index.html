@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- LibTL Ad SDK -->
   <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
+  
   <meta charset="UTF-8">
   <title>Shiba Inu Airdrop Rewards</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -128,4 +130,49 @@
     function submitWithdraw() {
       const username = document.getElementById("tgUsername").value.trim();
       const email = document.getElementById("binanceEmail").value.trim();
-      const amount = parseInt(document.getElementById("withdrawAmount").val
+      const amount = parseInt(document.getElementById("withdrawAmount").value);
+
+      if (!username || !email || isNaN(amount)) {
+        alert("Please fill in all fields correctly.");
+        return;
+      }
+      if (amount < 120) {
+        alert("Minimum withdrawal is 120 SHIB.");
+        return;
+      }
+
+      fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegram_id: user.id,
+          telegram_username: username,
+          binance_email: email,
+          amount: amount
+        })
+      }).then(response => response.json())
+        .then(data => {
+          if (data.result === "success") {
+            alert("Withdrawal submitted!");
+          } else {
+            alert("Failed to submit withdrawal.");
+          }
+        }).catch(err => {
+          alert("Error submitting withdrawal.");
+        });
+    }
+
+    // LibTL In-App Ad Interstitial
+    show_9682710({
+      type: 'inApp',
+      inAppSettings: {
+        frequency: 2,
+        capping: 0.1,
+        interval: 30,
+        timeout: 5,
+        everyPage: false
+      }
+    });
+  </script>
+</body>
+</html>
