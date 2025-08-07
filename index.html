@@ -1,7 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
   <meta charset="UTF-8">
   <title>Shiba Inu Airdrop Rewards</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,17 +51,6 @@
       font-size: 14px;
     }
   </style>
-  <!-- Monetag script for Popunder (example) -->
-  <script type="text/javascript">
-    var monetag = monetag || {};
-    monetag.siteId = 'YOUR_SITE_ID_HERE'; // Ganti dengan site ID kamu dari Monetag
-    (function() {
-        var script = document.createElement('script');
-        script.async = true;
-        script.src = '//momsapi.monetag.com/tag.min.js';
-        document.head.appendChild(script);
-    })();
-  </script>
 </head>
 <body>
   <img class="logo" src="https://www.webopedia.com/wp-content/uploads/2024/11/how-to-mine-shiba-inu-cover.webp" alt="Shiba Logo">
@@ -139,25 +128,4 @@
     function submitWithdraw() {
       const username = document.getElementById("tgUsername").value.trim();
       const email = document.getElementById("binanceEmail").value.trim();
-      const amount = parseInt(document.getElementById("withdrawAmount").value);
-
-      if (!username || !email || isNaN(amount)) {
-        alert("Please fill out all fields correctly.");
-        return;
-      }
-
-      if (amount < 120) {
-        alert("Minimum withdraw amount is 120 SHIB.");
-        return;
-      }
-
-      if (amount > balance) {
-        alert("You don't have enough SHIB.");
-        return;
-      }
-
-      alert("Withdrawal request submitted!");
-    }
-  </script>
-</body>
-</html>
+      const amount = parseInt(document.getElementById("withdrawAmount").val
