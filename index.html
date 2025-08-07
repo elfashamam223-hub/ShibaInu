@@ -32,9 +32,9 @@
       color: #000;
       cursor: pointer;
     }
-    .ad-container {
-      display: none;
-      margin: 20px 0;
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     .top-users, .withdraw-form {
       margin: 20px 0;
@@ -59,12 +59,7 @@
   <h2>Welcome, <span id="nickname">User</span>!</h2>
   <p class="balance">User ID: <span id="userid">-</span> | Balance: <span id="balance">0</span> SHIB</p>
 
-  <button onclick="startAd()">🎥 Watch Ad (+8 SHIB)</button>
-
-  <div class="ad-container" id="adContainer">
-    <p>🔒 Please wait <span id="timer">15</span> seconds to view the ad...</p>
-    <button id="closeAdBtn" disabled onclick="showAdAndReward()">✅ View Ad & Claim</button>
-  </div>
+  <button id="watchAdBtn" onclick="handleWatchAd()">🎥 Watch Ad (+8 SHIB)</button>
 
   <p>🚀 One day $SHIB will hit $1 — your efforts will not be wasted!</p>
 
@@ -101,32 +96,24 @@
     let balance = 0;
     document.getElementById("balance").textContent = balance;
 
-    function startAd() {
-      const adContainer = document.getElementById("adContainer");
-      adContainer.style.display = 'block';
-      let seconds = 15;
-      document.getElementById("timer").textContent = seconds;
-      document.getElementById("closeAdBtn").disabled = true;
+    function handleWatchAd() {
+      const btn = document.getElementById("watchAdBtn");
+      btn.disabled = true;
 
-      const interval = setInterval(() => {
-        seconds--;
-        document.getElementById("timer").textContent = seconds;
-        if (seconds <= 0) {
-          clearInterval(interval);
-          document.getElementById("closeAdBtn").disabled = false;
-        }
-      }, 1000);
-    }
-
-    function showAdAndReward() {
-      show_9682710().then(() => {
-        balance += 8;
-        document.getElementById("balance").textContent = balance;
-        document.getElementById("adContainer").style.display = 'none';
-        alert('You have received 8 SHIB!');
-      }).catch(() => {
-        alert("Ad failed to load. Please try again later.");
-      });
+      // Tampilkan iklan
+      show_9682710()
+        .then(() => {
+          // Berhasil menonton iklan
+          balance += 8;
+          document.getElementById("balance").textContent = balance;
+          alert('You have received 8 SHIB!');
+        })
+        .catch(() => {
+          alert("Ad failed to load. Please try again later.");
+        })
+        .finally(() => {
+          btn.disabled = false;
+        });
     }
 
     function submitWithdraw() {
