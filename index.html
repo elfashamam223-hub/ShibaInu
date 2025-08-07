@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- LibTL Ad SDK -->
-  <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
-  
   <meta charset="UTF-8">
   <title>Shiba Inu Airdrop Rewards</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- LibTL Ad SDK -->
+  <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
   <style>
     body {
       font-family: sans-serif;
@@ -63,10 +62,8 @@
   <button onclick="startAd()">🎥 Watch Ad (+8 SHIB)</button>
 
   <div class="ad-container" id="adContainer">
-    <p>🔒 Please wait 15 seconds to claim your reward...</p>
-    <iframe src="https://example.com" style="width:100%;height:120px;border:none;"></iframe>
-    <p id="timer">15</p>
-    <button id="closeAdBtn" disabled onclick="claimReward()">✅ Close & Claim</button>
+    <p>🔒 Please wait <span id="timer">15</span> seconds to view the ad...</p>
+    <button id="closeAdBtn" disabled onclick="showAdAndReward()">✅ View Ad & Claim</button>
   </div>
 
   <p>🚀 One day $SHIB will hit $1 — your efforts will not be wasted!</p>
@@ -121,10 +118,15 @@
       }, 1000);
     }
 
-    function claimReward() {
-      balance += 8;
-      document.getElementById("balance").textContent = balance;
-      document.getElementById("adContainer").style.display = 'none';
+    function showAdAndReward() {
+      show_9682710().then(() => {
+        balance += 8;
+        document.getElementById("balance").textContent = balance;
+        document.getElementById("adContainer").style.display = 'none';
+        alert('You have received 8 SHIB!');
+      }).catch(() => {
+        alert("Ad failed to load. Please try again later.");
+      });
     }
 
     function submitWithdraw() {
@@ -161,18 +163,6 @@
           alert("Error submitting withdrawal.");
         });
     }
-
-    // LibTL In-App Ad Interstitial
-    show_9682710({
-      type: 'inApp',
-      inAppSettings: {
-        frequency: 2,
-        capping: 0.1,
-        interval: 30,
-        timeout: 5,
-        everyPage: false
-      }
-    });
   </script>
 </body>
 </html>
