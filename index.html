@@ -127,7 +127,7 @@
     return params.get('user_id');
   }
 
-  // Simpan dan tampilkan balance
+  // Set dan simpan balance di UI dan localStorage
   function setBalance(newBalance) {
     balance = newBalance;
     document.getElementById('balance').innerText = balance;
@@ -142,7 +142,7 @@
     }
   }
 
-  // Load user data dari Apps Script berdasarkan user_id
+  // Load data user dari Apps Script
   async function loadUserData() {
     if(!userId) return;
 
@@ -163,7 +163,7 @@
     }
   }
 
-  // Load Top Earners dan Latest Withdraws
+  // Load Top Earners dari Apps Script
   async function loadLeaderboard() {
     try {
       const res = await fetch(`${webAppUrl}?action=leaderboard`);
@@ -184,7 +184,7 @@
     }
   }
 
-  // Fungsi reward setelah ads selesai
+  // Reward SHIB setelah nonton iklan selesai
   async function rewardShib(amount) {
     if(!userId) {
       alert('User ID not found. Please use the bot to get your Mini App link.');
@@ -203,6 +203,7 @@
         method: 'POST',
         body: JSON.stringify({
           action: "update_balance",
+          user_id: userId,
           username: username,
           amount: amount
         }),
@@ -211,7 +212,6 @@
       const postData = await postRes.json();
 
       if(postData.status === 'success') {
-        // Update balance di frontend dan localStorage
         setBalance(balance + amount);
         alert(`🎉 You earned +${amount} SHIB!`);
       } else {
@@ -223,7 +223,7 @@
     }
   }
 
-  // Fungsi withdraw, kirim data ke sheet
+  // Withdraw request ke Apps Script
   async function withdraw() {
     const username = document.getElementById('username').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -260,7 +260,6 @@
         alert(`✅ Withdraw submitted:\n${username} | ${email} | ${amount} SHIB`);
         setBalance(balance - amount);
         document.getElementById('amount').value = '';
-        // Refresh leaderboard setelah withdraw
         loadLeaderboard();
       } else {
         alert(`❌ Withdraw failed: ${data.message}`);
@@ -271,20 +270,20 @@
     }
   }
 
-  // Event listeners tombol
+  // Event tombol Watch Ad
   document.getElementById('watchAdBtn').addEventListener('click', () => {
-    // Show ad and reward only after ad finishes
     show_9682710().then(() => {
       rewardShib(8);
-    }).catch((err) => {
+    }).catch(err => {
       console.error('Ad error:', err);
       alert('Ad failed or was skipped.');
     });
   });
 
+  // Event tombol Withdraw
   document.getElementById('withdrawBtn').addEventListener('click', withdraw);
 
-  // Init
+  // Init on page load
   window.onload = () => {
     userId = getUserIdFromUrl();
     loadUserData();
