@@ -32,9 +32,20 @@
       color: #000;
       cursor: pointer;
     }
-    button:disabled {
-      background-color: gray;
-      cursor: not-allowed;
+    .ad-container {
+      display: none;
+      margin: 20px 0;
+    }
+    .top-users, .withdraw-form {
+      margin: 20px 0;
+      text-align: left;
+    }
+    input {
+      width: 90%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: none;
     }
     .footer {
       margin-top: 40px;
@@ -48,7 +59,12 @@
   <h2>Welcome, <span id="nickname">User</span>!</h2>
   <p class="balance">User ID: <span id="userid">-</span> | Balance: <span id="balance">0</span> SHIB</p>
 
-  <button id="watchAdBtn" onclick="watchAd()">🎥 Watch Ad (+8 SHIB)</button>
+  <button onclick="startAd()">🎥 Watch Ad (+8 SHIB)</button>
+
+  <div class="ad-container" id="adContainer">
+    <p>🔒 Please wait <span id="timer">15</span> seconds to view the ad...</p>
+    <button id="closeAdBtn" disabled onclick="showAdAndReward()">✅ View Ad & Claim</button>
+  </div>
 
   <p>🚀 One day $SHIB will hit $1 — your efforts will not be wasted!</p>
 
@@ -82,38 +98,34 @@
     document.getElementById("nickname").textContent = user.username || "anonymous";
     document.getElementById("userid").textContent = user.id || "-";
 
-    // Ambil saldo dari localStorage
-    let balance = parseInt(localStorage.getItem("shibBalance") || "0");
+    let balance = 0;
     document.getElementById("balance").textContent = balance;
 
-    let adCooldown = false;
+    function startAd() {
+      const adContainer = document.getElementById("adContainer");
+      adContainer.style.display = 'block';
+      let seconds = 15;
+      document.getElementById("timer").textContent = seconds;
+      document.getElementById("closeAdBtn").disabled = true;
 
-    function watchAd() {
-      if (adCooldown) return;
-      adCooldown = true;
-      const btn = document.getElementById("watchAdBtn");
-      btn.disabled = true;
-      btn.textContent = "Loading Ad...";
+      const interval = setInterval(() => {
+        seconds--;
+        document.getElementById("timer").textContent = seconds;
+        if (seconds <= 0) {
+          clearInterval(interval);
+          document.getElementById("closeAdBtn").disabled = false;
+        }
+      }, 1000);
+    }
 
+    function showAdAndReward() {
       show_9682710().then(() => {
         balance += 8;
-        localStorage.setItem("shibBalance", balance);
         document.getElementById("balance").textContent = balance;
-
-        alert("✅ You have received 8 SHIB!");
-        
-        // Cooldown 10 detik sebelum bisa klik lagi
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.textContent = "🎥 Watch Ad (+8 SHIB)";
-          adCooldown = false;
-        }, 10000);
-
+        document.getElementById("adContainer").style.display = 'none';
+        alert('You have received 8 SHIB!');
       }).catch(() => {
-        alert("❌ Ad failed to load. Please try again later.");
-        btn.disabled = false;
-        btn.textContent = "🎥 Watch Ad (+8 SHIB)";
-        adCooldown = false;
+        alert("Ad failed to load. Please try again later.");
       });
     }
 
