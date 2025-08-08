@@ -32,10 +32,6 @@
       color: #000;
       cursor: pointer;
     }
-    .ad-container {
-      display: none;
-      margin: 20px 0;
-    }
     .top-users, .withdraw-form {
       margin: 20px 0;
       text-align: left;
@@ -59,12 +55,7 @@
   <h2>Welcome, <span id="nickname">User</span>!</h2>
   <p class="balance">User ID: <span id="userid">-</span> | Balance: <span id="balance">0</span> SHIB</p>
 
-  <button onclick="startAd()">🎥 Watch Ad (+8 SHIB)</button>
-
-  <div class="ad-container" id="adContainer">
-    <p>🔒 Please wait <span id="timer">15</span> seconds to view the ad...</p>
-    <button id="closeAdBtn" disabled onclick="showAdAndReward()">✅ View Ad & Claim</button>
-  </div>
+  <button id="watchAdBtn">🎥 Watch Ad (+8 SHIB)</button>
 
   <p>🚀 One day $SHIB will hit $1 — your efforts will not be wasted!</p>
 
@@ -101,34 +92,35 @@
     let balance = 0;
     document.getElementById("balance").textContent = balance;
 
-    function startAd() {
-      const adContainer = document.getElementById("adContainer");
-      adContainer.style.display = 'block';
-      let seconds = 15;
-      document.getElementById("timer").textContent = seconds;
-      document.getElementById("closeAdBtn").disabled = true;
+    // === Watch Ad Anti-Spam + Reward ===
+    const watchBtn = document.getElementById("watchAdBtn");
+    let adCooldown = false;
 
-      const interval = setInterval(() => {
-        seconds--;
-        document.getElementById("timer").textContent = seconds;
-        if (seconds <= 0) {
-          clearInterval(interval);
-          document.getElementById("closeAdBtn").disabled = false;
-        }
-      }, 1000);
-    }
+    watchBtn.addEventListener("click", function () {
+      if (adCooldown) {
+        alert("Please wait before watching another ad.");
+        return;
+      }
 
-    function showAdAndReward() {
+      adCooldown = true;
+      watchBtn.disabled = true;
+
       show_9682710().then(() => {
         balance += 8;
         document.getElementById("balance").textContent = balance;
-        document.getElementById("adContainer").style.display = 'none';
-        alert('You have received 8 SHIB!');
+        alert("You have received 8 SHIB!");
       }).catch(() => {
         alert("Ad failed to load. Please try again later.");
+      }).finally(() => {
+        // cooldown 20 detik
+        setTimeout(() => {
+          adCooldown = false;
+          watchBtn.disabled = false;
+        }, 20000);
       });
-    }
+    });
 
+    // === Withdraw Form ===
     function submitWithdraw() {
       const username = document.getElementById("tgUsername").value.trim();
       const email = document.getElementById("binanceEmail").value.trim();
@@ -159,7 +151,7 @@
           } else {
             alert("Failed to submit withdrawal.");
           }
-        }).catch(err => {
+        }).catch(() => {
           alert("Error submitting withdrawal.");
         });
     }
