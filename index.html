@@ -4,157 +4,201 @@
   <meta charset="UTF-8">
   <title>Shiba Inu Airdrop Rewards</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- LibTL Ad SDK -->
+
+  <!-- Monetag LibTL SDK -->
   <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
+
   <style>
     body {
-      font-family: sans-serif;
-      background: #0f0f0f;
-      color: white;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #ffecd2, #fcb69f);
       text-align: center;
-      padding: 20px;
+      margin: 0;
+      padding: 0;
     }
-    img.logo {
+    header {
+      padding: 20px;
+      background-color: #ff4500;
+      color: white;
+      font-size: 20px;
+    }
+    .logo {
       width: 100px;
-      margin-top: 10px;
+      margin-top: 15px;
     }
     .balance {
       font-size: 18px;
-      margin: 10px 0;
+      margin: 15px 0;
     }
     button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 16px;
+      background-color: #ff4500;
+      color: white;
       border: none;
-      border-radius: 10px;
-      background-color: #fcd535;
-      color: #000;
+      padding: 12px 20px;
+      font-size: 16px;
       cursor: pointer;
+      border-radius: 10px;
+      margin: 10px;
     }
-    .top-users, .withdraw-form {
-      margin: 20px 0;
-      text-align: left;
+    button:disabled {
+      background-color: #999;
+    }
+    .section {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0px 3px 6px rgba(0,0,0,0.2);
     }
     input {
+      padding: 10px;
+      margin: 5px;
       width: 90%;
-      padding: 8px;
-      margin: 5px 0;
       border-radius: 5px;
-      border: none;
+      border: 1px solid #ccc;
     }
-    .footer {
-      margin-top: 40px;
-      font-size: 14px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    .sponsor {
+      width: 80px;
+      margin: 10px;
     }
   </style>
 </head>
 <body>
-  <img class="logo" src="https://www.webopedia.com/wp-content/uploads/2024/11/how-to-mine-shiba-inu-cover.webp" alt="Shiba Logo">
 
-  <h2>Welcome, <span id="nickname">User</span>!</h2>
-  <p class="balance">User ID: <span id="userid">-</span> | Balance: <span id="balance">0</span> SHIB</p>
+<header>
+  🐕 Shiba Inu Airdrop Rewards
+</header>
 
-  <button id="watchAdBtn">🎥 Watch Ad (+8 SHIB)</button>
+<img src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png" alt="Shiba Inu" class="logo">
 
-  <p>🚀 One day $SHIB will hit $1 — your efforts will not be wasted!</p>
+<div class="balance">
+  Welcome, <span id="username">User</span>!<br>
+  Balance: <span id="balance">0</span> SHIB
+</div>
 
-  <h3>💸 Withdraw SHIB</h3>
-  <div class="withdraw-form">
-    <input type="text" id="tgUsername" placeholder="Telegram Username">
-    <input type="email" id="binanceEmail" placeholder="Binance Email">
-    <input type="number" id="withdrawAmount" placeholder="Amount (min 120)">
-    <button onclick="submitWithdraw()">Submit Withdraw</button>
-  </div>
+<button id="watchAdBtn">🎥 Watch Ad (+8 SHIB)</button>
 
-  <h3>🏆 Top Earners</h3>
-  <div class="top-users" id="topUsers">
-    <ul>
-      <li>@Elhamam - 820 SHIB</li>
-      <li>@Ayung_crypto - 740 SHIB</li>
-      <li>@airdropsensei - 690 SHIB</li>
-    </ul>
-  </div>
+<p><i>One day $SHIB will hit $1...</i></p>
 
-  <p class="footer">
-    🔗 Join our Telegram Group for support and payment updates:<br>
-    <a href="https://t.me/+9r5guBuaVpQwMjU1" target="_blank" style="color:#fcd535;">https://t.me/+9r5guBuaVpQwMjU1</a><br><br>
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTLaguxHumMmsuTUpZ7pA95uBOSL8g95Ulbw&s" width="80" alt="Supported by">
-  </p>
+<div class="section">
+  <h3>Withdraw</h3>
+  <input type="text" id="tgUsername" placeholder="Telegram Username">
+  <input type="email" id="binanceEmail" placeholder="Binance Email">
+  <input type="number" id="withdrawAmount" placeholder="Amount (min 120)">
+  <button id="withdrawBtn">Withdraw</button>
+</div>
 
-  <script>
-    const tg = window.Telegram.WebApp;
-    const user = tg?.initDataUnsafe?.user || { id: 123456, username: "demoUser" };
+<div class="section">
+  <h3>Top Earners</h3>
+  <table id="topEarnersTable">
+    <tr><th>User</th><th>SHIB</th></tr>
+  </table>
+</div>
 
-    document.getElementById("nickname").textContent = user.username || "anonymous";
-    document.getElementById("userid").textContent = user.id || "-";
+<div class="section">
+  <h3>Latest Withdrawals</h3>
+  <table id="latestWithdrawalsTable">
+    <tr><th>User</th><th>Amount</th></tr>
+  </table>
+</div>
 
-    let balance = 0;
-    document.getElementById("balance").textContent = balance;
+<a href="https://t.me/YourAdminGroupLink" target="_blank">📢 Join our Telegram Group</a>
 
-    // === Watch Ad Anti-Spam + Reward ===
-    const watchBtn = document.getElementById("watchAdBtn");
-    let adCooldown = false;
+<div>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Bitcoin.svg" class="sponsor">
+  <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="sponsor">
+</div>
 
-    watchBtn.addEventListener("click", function () {
-      if (adCooldown) {
-        alert("Please wait before watching another ad.");
-        return;
-      }
+<script>
+  let balance = 0;
+  let username = "Guest";
 
-      adCooldown = true;
-      watchBtn.disabled = true;
+  // Simulasi data Telegram WebApp (bisa diganti sesuai init data Telegram)
+  username = "TestUser";
+  document.getElementById("username").innerText = username;
 
-      show_9682710().then(() => {
-        balance += 8;
-        document.getElementById("balance").textContent = balance;
-        alert("You have received 8 SHIB!");
-      }).catch(() => {
-        alert("Ad failed to load. Please try again later.");
-      }).finally(() => {
-        // cooldown 20 detik
-        setTimeout(() => {
-          adCooldown = false;
-          watchBtn.disabled = false;
-        }, 20000);
+  // Tombol Watch Ad → tanpa timer tambahan
+  document.getElementById("watchAdBtn").addEventListener("click", () => {
+    show_9682710(); // Tampilkan iklan Monetag
+    // Setelah iklan selesai (callback ini tergantung Monetag, sementara auto-claim)
+    setTimeout(() => {
+      balance += 8;
+      document.getElementById("balance").innerText = balance;
+      alert("+8 SHIB added!");
+    }, 15000); // Kalau mau langsung tanpa delay → ganti jadi 0
+  });
+
+  // Withdraw
+  document.getElementById("withdrawBtn").addEventListener("click", () => {
+    let tgUser = document.getElementById("tgUsername").value.trim();
+    let email = document.getElementById("binanceEmail").value.trim();
+    let amount = parseInt(document.getElementById("withdrawAmount").value);
+
+    if (!tgUser || !email || isNaN(amount)) {
+      alert("Please fill in all fields");
+      return;
+    }
+    if (amount < 120) {
+      alert("Minimum withdraw is 120 SHIB");
+      return;
+    }
+    if (amount > balance) {
+      alert("Not enough balance");
+      return;
+    }
+
+    fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec", {
+      method: "POST",
+      body: JSON.stringify({
+        telegram: tgUser,
+        email: email,
+        amount: amount
+      }),
+      headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.text())
+    .then(data => {
+      alert("Withdraw request sent!");
+      balance -= amount;
+      document.getElementById("balance").innerText = balance;
+    })
+    .catch(err => alert("Error: " + err));
+  });
+
+  // Load Top Earners
+  fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec?action=top10")
+    .then(res => res.json())
+    .then(data => {
+      let table = document.getElementById("topEarnersTable");
+      data.forEach(row => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `<td>${row.username}</td><td>${row.balance}</td>`;
+        table.appendChild(tr);
       });
     });
 
-    // === Withdraw Form ===
-    function submitWithdraw() {
-      const username = document.getElementById("tgUsername").value.trim();
-      const email = document.getElementById("binanceEmail").value.trim();
-      const amount = parseInt(document.getElementById("withdrawAmount").value);
+  // Load Latest Withdrawals
+  fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec?action=latest")
+    .then(res => res.json())
+    .then(data => {
+      let table = document.getElementById("latestWithdrawalsTable");
+      data.forEach(row => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `<td>${row.username}</td><td>${row.amount}</td>`;
+        table.appendChild(tr);
+      });
+    });
+</script>
 
-      if (!username || !email || isNaN(amount)) {
-        alert("Please fill in all fields correctly.");
-        return;
-      }
-      if (amount < 120) {
-        alert("Minimum withdrawal is 120 SHIB.");
-        return;
-      }
-
-      fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          telegram_id: user.id,
-          telegram_username: username,
-          binance_email: email,
-          amount: amount
-        })
-      }).then(response => response.json())
-        .then(data => {
-          if (data.result === "success") {
-            alert("Withdrawal submitted!");
-          } else {
-            alert("Failed to submit withdrawal.");
-          }
-        }).catch(() => {
-          alert("Error submitting withdrawal.");
-        });
-    }
-  </script>
 </body>
 </html>
