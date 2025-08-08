@@ -1,203 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Shiba Inu Airdrop Rewards</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Shiba Inu Airdrop Rewards</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Monetag LibTL SDK -->
-  <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
+<!-- Monetag Ad SDK -->
+<script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #ffecd2, #fcb69f);
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      padding: 20px;
-      background-color: #ff4500;
-      color: white;
-      font-size: 20px;
-    }
-    .logo {
-      width: 100px;
-      margin-top: 15px;
-    }
-    .balance {
-      font-size: 18px;
-      margin: 15px 0;
-    }
-    button {
-      background-color: #ff4500;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 10px;
-      margin: 10px;
-    }
-    button:disabled {
-      background-color: #999;
-    }
-    .section {
-      background: white;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0px 3px 6px rgba(0,0,0,0.2);
-    }
-    input {
-      padding: 10px;
-      margin: 5px;
-      width: 90%;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-    }
-    .sponsor {
-      width: 80px;
-      margin: 10px;
-    }
-  </style>
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffcc70, #ff9966);
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    padding: 20px;
+  }
+
+  header img {
+    width: 100px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  h1 {
+    font-size: 26px;
+    margin-bottom: 5px;
+  }
+
+  .balance {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+
+  button {
+    background: #ff4d4d;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 30px;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+  }
+
+  button:hover {
+    background: #ff3333;
+    transform: scale(1.05);
+  }
+
+  .section {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px;
+  }
+
+  input {
+    padding: 10px;
+    width: 90%;
+    border-radius: 10px;
+    border: none;
+    margin: 8px 0;
+    font-size: 14px;
+  }
+
+  .footer {
+    font-size: 12px;
+    padding: 10px;
+    opacity: 0.8;
+  }
+</style>
 </head>
 <body>
 
 <header>
-  🐕 Shiba Inu Airdrop Rewards
+  <img src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png" alt="Shiba Logo">
+  <h1>Shiba Inu Rewards</h1>
+  <div class="balance">Balance: <span id="balance">0</span> SHIB</div>
 </header>
 
-<img src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png" alt="Shiba Inu" class="logo">
-
-<div class="balance">
-  Welcome, <span id="username">User</span>!<br>
-  Balance: <span id="balance">0</span> SHIB
-</div>
-
-<button id="watchAdBtn">🎥 Watch Ad (+8 SHIB)</button>
-
-<p><i>One day $SHIB will hit $1...</i></p>
-
 <div class="section">
-  <h3>Withdraw</h3>
-  <input type="text" id="tgUsername" placeholder="Telegram Username">
-  <input type="email" id="binanceEmail" placeholder="Binance Email">
-  <input type="number" id="withdrawAmount" placeholder="Amount (min 120)">
-  <button id="withdrawBtn">Withdraw</button>
+  <button onclick="show_9682710(); addShib(8)">🎥 Watch Ad (+8 SHIB)</button>
 </div>
 
 <div class="section">
-  <h3>Top Earners</h3>
-  <table id="topEarnersTable">
-    <tr><th>User</th><th>SHIB</th></tr>
-  </table>
+  <h2>Withdraw</h2>
+  <input type="text" id="username" placeholder="Telegram Username">
+  <input type="email" id="email" placeholder="Binance Email">
+  <input type="number" id="amount" placeholder="Amount (min 120 SHIB)">
+  <button onclick="withdraw()">💸 Withdraw</button>
 </div>
 
 <div class="section">
-  <h3>Latest Withdrawals</h3>
-  <table id="latestWithdrawalsTable">
-    <tr><th>User</th><th>Amount</th></tr>
-  </table>
+  <h2>Top Earners</h2>
+  <ul id="topEarners">
+    <li>Loading...</li>
+  </ul>
 </div>
 
-<a href="https://t.me/YourAdminGroupLink" target="_blank">📢 Join our Telegram Group</a>
-
-<div>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Bitcoin.svg" class="sponsor">
-  <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="sponsor">
+<div class="footer">
+  One day $SHIB will hit $1 🚀 | Join our <a href="#" style="color: yellow;">Telegram Group</a>
 </div>
 
 <script>
   let balance = 0;
-  let username = "Guest";
 
-  // Simulasi data Telegram WebApp (bisa diganti sesuai init data Telegram)
-  username = "TestUser";
-  document.getElementById("username").innerText = username;
+  function addShib(amount) {
+    balance += amount;
+    document.getElementById('balance').innerText = balance;
+  }
 
-  // Tombol Watch Ad → tanpa timer tambahan
-  document.getElementById("watchAdBtn").addEventListener("click", () => {
-    show_9682710(); // Tampilkan iklan Monetag
-    // Setelah iklan selesai (callback ini tergantung Monetag, sementara auto-claim)
-    setTimeout(() => {
-      balance += 8;
-      document.getElementById("balance").innerText = balance;
-      alert("+8 SHIB added!");
-    }, 15000); // Kalau mau langsung tanpa delay → ganti jadi 0
-  });
+  function withdraw() {
+    const user = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const amount = parseInt(document.getElementById('amount').value);
 
-  // Withdraw
-  document.getElementById("withdrawBtn").addEventListener("click", () => {
-    let tgUser = document.getElementById("tgUsername").value.trim();
-    let email = document.getElementById("binanceEmail").value.trim();
-    let amount = parseInt(document.getElementById("withdrawAmount").value);
-
-    if (!tgUser || !email || isNaN(amount)) {
-      alert("Please fill in all fields");
-      return;
-    }
     if (amount < 120) {
       alert("Minimum withdraw is 120 SHIB");
       return;
     }
-    if (amount > balance) {
-      alert("Not enough balance");
-      return;
-    }
-
-    fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec", {
-      method: "POST",
-      body: JSON.stringify({
-        telegram: tgUser,
-        email: email,
-        amount: amount
-      }),
-      headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.text())
-    .then(data => {
-      alert("Withdraw request sent!");
-      balance -= amount;
-      document.getElementById("balance").innerText = balance;
-    })
-    .catch(err => alert("Error: " + err));
-  });
-
-  // Load Top Earners
-  fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec?action=top10")
-    .then(res => res.json())
-    .then(data => {
-      let table = document.getElementById("topEarnersTable");
-      data.forEach(row => {
-        let tr = document.createElement("tr");
-        tr.innerHTML = `<td>${row.username}</td><td>${row.balance}</td>`;
-        table.appendChild(tr);
-      });
-    });
-
-  // Load Latest Withdrawals
-  fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec?action=latest")
-    .then(res => res.json())
-    .then(data => {
-      let table = document.getElementById("latestWithdrawalsTable");
-      data.forEach(row => {
-        let tr = document.createElement("tr");
-        tr.innerHTML = `<td>${row.username}</td><td>${row.amount}</td>`;
-        table.appendChild(tr);
-      });
-    });
+    alert(`Withdraw request sent:\n${user} | ${email} | ${amount} SHIB`);
+    // fetch POST ke Google Apps Script bisa ditambahkan di sini
+  }
 </script>
 
 </body>
