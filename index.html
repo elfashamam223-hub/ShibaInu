@@ -94,7 +94,7 @@
 </header>
 
 <div class="section">
-  <button onclick="show_9682710(); addShib(8)">🎥 Watch Ad (+8 SHIB)</button>
+  <button onclick="show_9682710().then(() => addShib(8))">🎥 Watch Ad (+8 SHIB)</button>
 </div>
 
 <div class="section">
@@ -117,40 +117,114 @@
 </div>
 
 <script>
+  const webAppUrl = 'https://script.google.com/macros/s/AKfycbzqG2CmYbaUYauds6fPYGARUJEoKqOoZN6EVMSCjoyo8thEfm8hGGU-v9Jf-0SFW2UOZA/exec';
+
+  // Ambil username dari input, pakai nanti untuk localStorage key dan sinkronisasi server
+  function getUsername() {
+    return document.getElementById('username').value.trim();
+  }
+
+  // Inisialisasi saldo dari localStorage saat page load
   let balance = 0;
+  window.onload = () => {
+    const storedUsername = getUsername();
+    if(storedUsername) {
+      const saved = localStorage.getItem('shib_balance_' + storedUsername);
+      balance = saved ? parseInt(saved) : 0;
+      document.getElementById('balance').innerText = balance;
+    }
+  }
+
+  // Fungsi update balance ke server Google Apps Script
+  async function updateBalanceToServer(username, amountToAdd) {
+    if(!username) {
+      alert("Please enter your Telegram Username first.");
+      return;
+    }
+    try {
+      const res = await fetch(webAppUrl, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: "update_balance",
+          username: username,
+          amount: amountToAdd
+        }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if(data.status === 'success') {
+        console.log("Balance updated on server");
+      } else {
+        console.error("Server error:", data.message);
+      }
+    } catch(err) {
+      console.error("Error updating balance:", err);
+    }
+  }
 
   function addShib(amount) {
+    const username = getUsername();
+    if(!username) {
+      alert("Please enter your Telegram Username first!");
+      return;
+    }
     balance += amount;
     document.getElementById('balance').innerText = balance;
+    localStorage.setItem('shib_balance_' + username, balance);
+    updateBalanceToServer(username, amount);
+    alert(`Congrats! You earned +${amount} SHIB`);
   }
 
   function withdraw() {
-    const user = document.getElementById('username').value;
-    const email = document.getElementById('email').value;
+    const user = getUsername();
+    const email = document.getElementById('email').value.trim();
     const amount = parseInt(document.getElementById('amount').value);
 
-    if (amount < 120) {
-      alert("Minimum withdraw is 120 SHIB");
+    if(!user) {
+      alert("Please enter your Telegram Username before withdrawing.");
       return;
     }
-    alert(`Withdraw request sent:\n${user} | ${email} | ${amount} SHIB`);
-    // fetch POST ke Google Apps Script bisa ditambahkan di sini
+    if(!email) {
+      alert("Please enter your Binance Email.");
+      return;
+    }
+    if(isNaN(amount) || amount < 120) {
+      alert("Minimum withdraw is 120 SHIB.");
+      return;
+    }
+    if(amount > balance) {
+      alert("Insufficient balance.");
+      return;
+    }
+
+    // Kirim data withdraw ke Web Apps (POST)
+    fetch(webAppUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: "submit_withdraw",
+        username: user,
+        email: email,
+        amount: amount
+      }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.status === 'success') {
+        alert("Withdraw submitted successfully!");
+        balance -= amount;
+        document.getElementById('balance').innerText = balance;
+        localStorage.setItem('shib_balance_' + user, balance);
+      } else {
+        alert("Error: " + data.message);
+      }
+    })
+    .catch(err => {
+      alert("Failed to submit withdraw.");
+      console.error(err);
+    });
   }
-  
-
-// Rewarded interstitial
-
-show_9682710().then(() => {
-    // You need to add your user reward function here, which will be executed after the user watches the ad.
-    // For more details, please refer to the detailed instructions.
-    alert('You have seen an ad!');
-})
-
-        
 </script>
 
 </body>
 </html>
-
-
-
