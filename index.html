@@ -173,37 +173,36 @@
   }
 
   async function rewardShib(amount) {
-    const username = document.getElementById('username').value.trim();
-    const email = document.getElementById('email').value.trim();
-
-    if (!username || !email) {
-      alert('You must register via the Telegram bot before earning rewards.');
-      return;
-    }
-
-    try {
-      const postRes = await fetch(WEBAPP_URL, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          action: 'update_balance',
-          username: username,
-          amount: amount
-        })
-      });
-      const postData = await postRes.json();
-
-      if (postData.status === 'success') {
-        setBalanceUI(balance + amount);
-        alert(`🎉 You earned +${amount} SHIB!`);
-      } else {
-        alert(`Error: ${postData.message}`);
-      }
-    } catch (err) {
-      alert('Failed to update balance.');
-      console.error(err);
-    }
+  const username = document.getElementById('username').value.trim();
+  if (!username) {
+    alert('Username is missing. Please register first.');
+    return;
   }
+
+  try {
+    const response = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        action: 'update_balance',
+        username: username,
+        amount: amount
+      })
+    });
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      alert(`🎉 You earned +${amount} SHIB!` + (data.message || 'Balance Updated'));
+      // Update UI balance, localStorage dll
+    } else {
+      alert('Failed to add balance: ' + (data.message || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Failed to add balance due to network or server error.');
+    console.error(err);
+  }
+}
+
 
   async function withdraw() {
     const username = document.getElementById('username').value.trim();
@@ -287,4 +286,5 @@
 
 </body>
 </html>
+
 
