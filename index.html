@@ -66,37 +66,52 @@ let userId = null;
 let balance = 0;
 
 function getUserIdFromUrl() {
-  return new URLSearchParams(window.location.search).get('user_id');
-}
-
+    const params = new URLSearchParams(window.location.search);
+    return params.get('user_id');
+  }
 function setBalanceUI(v) {
   balance = Number(v) || 0;
   document.getElementById('balance').innerText = balance;
   localStorage.setItem('shib_balance', balance);
 }
 
-function loadLocalBalance() {
-  const s = localStorage.getItem('shib_balance');
-  if (s !== null) setBalanceUI(Number(s));
-}
-
 async function loadUserData() {
-  if (!userId) return;
-  try {
-    const res = await fetch(`${WEBAPP_URL}?action=get_user&user_id=${encodeURIComponent(userId)}`);
-    const data = await res.json();
-    if (data.status === 'success' && data.user) {
-      if (data.user.username) document.getElementById('username').value = data.user.username;
-      if (data.user.email) document.getElementById('email').value = data.user.email;
-      setBalanceUI(Number(data.user.balance || 0));
-    } else {
-      alert('You are not registered yet. Please register first via Telegram bot to use this Mini App.');
+    if (!userId) {
+      alert('User ID not found in URL. Please open Mini App via bot link.');
+      return;
     }
-  } catch (err) {
-    console.error('loadUserData error', err);
-    alert('Failed to load your data. Please try again later.');
+
+    try {
+      const res = await fetch(`${WEBAPP_URL}?action=get_user&user_id=${encodeURIComponent(userId)}`);
+      const data = await res.json();
+
+      if (data.status === 'success' && data.user) {
+        const usernameField = document.getElementById('username');
+        const emailField = document.getElementById('email');
+
+        if (data.user.username && data.user.email) {
+          usernameField.value = data.user.username;
+          emailField.value = data.user.email;
+          usernameField.disabled = true;  // disable supaya user tidak bisa edit
+          emailField.disabled = true;
+          setBalanceUI(Number(data.user.balance || 0));
+        } else {
+          alert('You have not registered yet. Please register via the Telegram bot first.');
+          // kosongkan form supaya user tahu harus isi
+          usernameField.value = '';
+          emailField.value = '';
+          usernameField.disabled = false;
+          emailField.disabled = false;
+          setBalanceUI(0);
+        }
+      } else {
+        alert('User not registered yet. Please register via the Telegram bot first.');
+      }
+    } catch (err) {
+      console.error('Error loading user data:', err);
+      alert('Failed to load user data. Check your internet connection.');
+    }
   }
-}
 
 window.onload = () => {
   userId = getUserIdFromUrl();
