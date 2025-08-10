@@ -12,77 +12,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 
 <style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #ffcc70, #ff9966);
-    color: #fff;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-  }
-
-  header {
-    padding: 20px;
-  }
-
-  header img {
-    width: 100px;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-
-  h1 {
-    font-size: 26px;
-    margin-bottom: 5px;
-  }
-
-  .balance {
-    font-size: 18px;
-    margin-bottom: 20px;
-  }
-
-  button {
-    background: #ff4d4d;
-    border: none;
-    padding: 12px 25px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 30px;
-    color: #fff;
-    cursor: pointer;
-    transition: transform 0.2s, background 0.3s;
-  }
-
-  button:hover {
-    background: #ff3333;
-    transform: scale(1.05);
-  }
-
-  .section {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 15px;
-    padding: 15px;
-    margin: 15px;
-  }
-
-  input {
-    padding: 10px;
-    width: 90%;
-    border-radius: 10px;
-    border: none;
-    margin: 8px 0;
-    font-size: 14px;
-  }
-
-  .footer {
-    font-size: 12px;
-    padding: 10px;
-    opacity: 0.8;
-  }
+  /* --- tetap persis tatanan & style kamu --- */
+  body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #ffcc70, #ff9966); color: #fff; text-align:center; margin:0; padding:0; }
+  header { padding:20px; }
+  header img { width:100px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+  h1 { font-size:26px; margin-bottom:5px; }
+  .balance { font-size:18px; margin-bottom:20px; }
+  button { background:#ff4d4d; border:none; padding:12px 25px; font-size:16px; font-weight:600; border-radius:30px; color:#fff; cursor:pointer; transition:transform 0.2s, background 0.3s; }
+  button:hover { background:#ff3333; transform:scale(1.05); }
+  .section { background: rgba(255,255,255,0.15); border-radius:15px; padding:15px; margin:15px; }
+  input { padding:10px; width:90%; border-radius:10px; border:none; margin:8px 0; font-size:14px; }
+  .footer { font-size:12px; padding:10px; opacity:0.8; }
 </style>
 </head>
 <body>
@@ -99,17 +40,15 @@
 
 <div class="section">
   <h2>Withdraw</h2>
- <input type="text" id="username" placeholder="Telegram Username" />
-<input type="email" id="email" placeholder="Binance Email" />
+  <input type="text" id="username" placeholder="Telegram Username" />
+  <input type="email" id="email" placeholder="Binance Email" />
   <input type="number" id="amount" placeholder="Amount (min 120 SHIB)" />
   <button id="withdrawBtn">💸 Withdraw</button>
 </div>
 
 <div class="section">
   <h2>Top Earners</h2>
-  <ul id="topEarners">
-    <li>Loading...</li>
-  </ul>
+  <ul id="topEarners"><li>Loading...</li></ul>
 </div>
 
 <div class="footer">
@@ -117,181 +56,156 @@
 </div>
 
 <script>
-  const webAppUrl = 'https://script.google.com/macros/s/AKfycbzqG2CmYbaUYauds6fPYGARUJEoKqOoZN6EVMSCjoyo8thEfm8hGGU-v9Jf-0SFW2UOZA/exec';
-  let userId = null;
-  let balance = 0;
+/* ---------- CONFIG (ganti ini) ---------- */
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyGiIIFFfbyE6NQJ-9RlbSMvIYRvb4MLlENll_ZBbRdaJD_GVZXHVMVebBwRTl9osAh/exec"; // URL deploy Apps Script (doGet/doPost)
+const REWARD_AMOUNT = 8;
+const MIN_WITHDRAW = 120;
+/* ----------------------------------------- */
 
-  // Ambil user_id dari URL param
-  function getUserIdFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('user_id');
-  }
+let userId = null;
+let balance = 0;
 
-  // Simpan dan tampilkan balance
-  function setBalance(newBalance) {
-    balance = newBalance;
-    document.getElementById('balance').innerText = balance;
-    localStorage.setItem('balance', balance);
-  }
+// ambil user_id dari query param (bot mengirim ?user_id=123)
+function getUserIdFromUrl() {
+  return new URLSearchParams(window.location.search).get('user_id');
+}
 
-  // Load balance dari localStorage
-  function loadBalance() {
-    const saved = localStorage.getItem('balance');
-    if(saved !== null) {
-      setBalance(parseInt(saved));
+function setBalanceUI(v) {
+  balance = Number(v) || 0;
+  document.getElementById('balance').innerText = balance;
+  localStorage.setItem('shib_balance', balance);
+}
+
+function loadLocalBalance() {
+  const s = localStorage.getItem('shib_balance');
+  if (s !== null) setBalanceUI(Number(s));
+}
+
+// fetch user data from Apps Script (by user_id)
+async function loadUserData() {
+  if (!userId) return;
+  try {
+    const res = await fetch(`${WEBAPP_URL}?action=get_user&user_id=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    if (data.status === 'success' && data.user) {
+      if (data.user.username) document.getElementById('username').value = data.user.username;
+      if (data.user.email) document.getElementById('email').value = data.user.email;
+      setBalanceUI(Number(data.user.balance || 0));
+    } else {
+      // user not registered yet — keep fields empty so user can fill and tell them to register via bot
+      console.log('User not found in DB, prompt to register via bot.');
     }
+  } catch (err) {
+    console.error('loadUserData error', err);
   }
+}
 
-  // Load user data dari Apps Script berdasarkan user_id
-  async function loadUserData() {
-    if(!userId) return;
-
-    try {
-      const res = await fetch(`${webAppUrl}?action=get_user&user_id=${userId}`);
-      const data = await res.json();
-      if(data.status === 'success' && data.user) {
-        document.getElementById('username').value = data.user.username || '';
-        document.getElementById('email').value = data.user.email || '';
-        setBalance(parseInt(data.user.balance || 0));
-      } else {
-        console.warn('User not found or error:', data.message);
-        setBalance(0);
-      }
-    } catch (err) {
-      console.error('Failed to load user data:', err);
-      setBalance(0);
-    }
-  }
-
-  // Load Top Earners dan Latest Withdraws
-  async function loadLeaderboard() {
-    try {
-      const res = await fetch(`${webAppUrl}?action=leaderboard`);
-      const data = await res.json();
-      if(data.status === 'success') {
-        const topList = document.getElementById('topEarners');
-        topList.innerHTML = '';
-        data.topEarners.forEach(user => {
-          const li = document.createElement('li');
-          li.textContent = `${user.username}: ${user.balance} SHIB`;
-          topList.appendChild(li);
-        });
-      } else {
-        console.warn('Leaderboard error:', data.message);
-      }
-    } catch(err) {
-      console.error('Failed to load leaderboard:', err);
-    }
-  }
-
-  // Fungsi reward setelah ads selesai
-  async function rewardShib(amount) {
-    if(!userId) {
-      alert('User ID not found. Please use the bot to get your Mini App link.');
-      return;
-    }
-
-    const username = document.getElementById('username').value;
-    if(!username) {
-      alert('Username is missing.');
-      return;
-    }
-
-    try {
-      // Kirim update balance ke Apps Script
-      const postRes = await fetch(webAppUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: "update_balance",
-          username: username,
-          amount: amount
-        }),
-        headers: { 'Content-Type': 'application/json' }
+// load leaderboard
+async function loadLeaderboard() {
+  try {
+    const res = await fetch(`${WEBAPP_URL}?action=leaderboard`);
+    const data = await res.json();
+    if (data.status === 'success') {
+      const list = document.getElementById('topEarners'); list.innerHTML = '';
+      data.topEarners.forEach(u => {
+        const li = document.createElement('li'); li.textContent = `${u.username}: ${u.balance} SHIB`; list.appendChild(li);
       });
-      const postData = await postRes.json();
-
-      if(postData.status === 'success') {
-        // Update balance di frontend dan localStorage
-        setBalance(balance + amount);
-        alert(`🎉 You earned +${amount} SHIB!`);
-      } else {
-        alert(`❌ Error: ${postData.message}`);
-      }
-    } catch(err) {
-      alert('Failed to update balance.');
-      console.error(err);
     }
-  }
+  } catch (err) { console.error('loadLeaderboard', err); }
+}
 
-  // Fungsi withdraw, kirim data ke sheet
-  async function withdraw() {
-    const username = document.getElementById('username').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const amountInput = document.getElementById('amount').value.trim();
-    const amount = parseInt(amountInput);
-
-    if(!username || !email) {
-      alert('Please make sure your username and email are filled.');
-      return;
-    }
-    if(isNaN(amount) || amount < 120) {
-      alert('Minimum withdraw is 120 SHIB');
-      return;
-    }
-    if(amount > balance) {
-      alert('Insufficient balance for this withdraw.');
-      return;
-    }
-
-    try {
-      const res = await fetch(webAppUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: "submit_withdraw",
-          username: username,
-          email: email,
-          amount: amount
-        }),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const data = await res.json();
-
-      if(data.status === 'success') {
-        alert(`✅ Withdraw submitted:\n${username} | ${email} | ${amount} SHIB`);
-        setBalance(balance - amount);
-        document.getElementById('amount').value = '';
-        // Refresh leaderboard setelah withdraw
-        loadLeaderboard();
-      } else {
-        alert(`❌ Withdraw failed: ${data.message}`);
-      }
-    } catch(err) {
-      alert('Failed to submit withdraw.');
-      console.error(err);
-    }
-  }
-
-  // Event listeners tombol
-  document.getElementById('watchAdBtn').addEventListener('click', () => {
-    // Show ad and reward only after ad finishes
-    show_9682710().then(() => {
-      rewardShib(8);
-    }).catch((err) => {
-      console.error('Ad error:', err);
-      alert('Ad failed or was skipped.');
+// call update balance on server
+async function updateBalanceServer(username, amount, user_id) {
+  try {
+    const res = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'update_balance', username: username, amount: amount, user_id: user_id })
     });
-  });
+    return await res.json();
+  } catch (err) {
+    console.error('updateBalanceServer', err);
+    return { status: 'error', message: 'Network error' };
+  }
+}
 
-  document.getElementById('withdrawBtn').addEventListener('click', withdraw);
+// reward flow: require both username & email (must be registered)
+async function rewardFlow(amount) {
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  if (!username || !email) {
+    alert('You must have registered username and email first (use the bot /register).');
+    return;
+  }
 
-  // Init
-  window.onload = () => {
-    userId = getUserIdFromUrl();
-    loadUserData();
-    loadBalance();
+  // show ad via Monetag SDK and reward only after ad finishes
+  if (typeof show_9682710 === 'function') {
+    try {
+      await show_9682710(); // assume SDK returns a Promise
+    } catch (err) {
+      console.error('Ad error:', err);
+      alert('Ad failed or was skipped. No reward.');
+      return;
+    }
+  } else {
+    // fallback: if SDK not available, block reward
+    alert('Ad SDK not available. Try again later inside Telegram.');
+    return;
+  }
+
+  // call server to add balance
+  const result = await updateBalanceServer(username, amount, userId);
+  if (result.status === 'success') {
+    setBalanceUI(result.newBalance);
+    alert(`🎉 You earned +${amount} SHIB!`);
     loadLeaderboard();
-  };
-</script>
+  } else {
+    alert('Failed to update balance: ' + result.message);
+  }
+}
 
+// withdraw flow
+async function submitWithdraw() {
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const amount = Number(document.getElementById('amount').value);
+  if (!username || !email) { alert('Please ensure username and email are filled (register via bot).'); return; }
+  if (!amount || amount < MIN_WITHDRAW) { alert('Minimum withdraw is ' + MIN_WITHDRAW + ' SHIB'); return; }
+  if (amount > balance) { alert('Insufficient balance'); return; }
+
+  // POST withdraw
+  try {
+    const res = await fetch(WEBAPP_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'submit_withdraw', username: username, email: email, amount: amount, user_id: userId })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert('✅ Withdraw submitted. Await admin approval.');
+      setBalanceUI(data.newBalance);
+      document.getElementById('amount').value = '';
+      loadLeaderboard();
+    } else {
+      alert('Withdraw failed: ' + data.message);
+    }
+  } catch (err) {
+    console.error('submitWithdraw error', err);
+    alert('Network error');
+  }
+}
+
+/* events */
+document.getElementById('watchAdBtn').addEventListener('click', () => rewardFlow(REWARD_AMOUNT));
+document.getElementById('withdrawBtn').addEventListener('click', submitWithdraw);
+
+/* init */
+window.addEventListener('load', () => {
+  userId = getUserIdFromUrl(); // coming from bot link ?user_id=...
+  loadLocalBalance();
+  loadUserData();
+  loadLeaderboard();
+});
+</script>
 </body>
 </html>
