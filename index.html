@@ -65,7 +65,6 @@ const MIN_WITHDRAW = 120;
 let userId = null;
 let balance = 0;
 
-// ambil user_id dari query param (bot mengirim ?user_id=123)
 function getUserIdFromUrl() {
   return new URLSearchParams(window.location.search).get('user_id');
 }
@@ -81,7 +80,6 @@ function loadLocalBalance() {
   if (s !== null) setBalanceUI(Number(s));
 }
 
-// fetch user data from Apps Script (by user_id)
 async function loadUserData() {
   if (!userId) return;
   try {
@@ -92,14 +90,19 @@ async function loadUserData() {
       if (data.user.email) document.getElementById('email').value = data.user.email;
       setBalanceUI(Number(data.user.balance || 0));
     } else {
-      // user not registered yet — keep fields empty so user can fill and tell them to register via bot
-      console.log('User not found in DB, prompt to register via bot.');
+      alert('You are not registered yet. Please register first via Telegram bot to use this Mini App.');
     }
   } catch (err) {
     console.error('loadUserData error', err);
+    alert('Failed to load your data. Please try again later.');
   }
 }
 
+window.onload = () => {
+  userId = getUserIdFromUrl();
+  loadLocalBalance();
+  loadUserData();
+};
 // load leaderboard
 async function loadLeaderboard() {
   try {
