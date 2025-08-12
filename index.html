@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>Shiba Inu Reward</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Monetag Ad SDK -->
+    <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
+
     <style>
         body { font-family: Arial, sans-serif; background: #ffeed0; text-align: center; padding: 20px; }
         .logo { width: 100px; margin-top: 20px; }
@@ -12,6 +16,7 @@
         .watch-ad { background: #ff9900; color: white; }
         .withdraw { background: #ff3366; color: white; }
         .leaderboard, .latest { background: #fff8ee; padding: 10px; border-radius: 8px; margin-top: 20px; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -19,7 +24,7 @@
     <h2>🚀 Shiba Inu Reward</h2>
     <div id="user-info">Loading...</div>
     <div class="balance">💰 Balance: <span id="balance">0</span> SHIB</div>
-    <button class="watch-ad" onclick="watchAd()">📺 Watch Ad (+8 SHIB)</button>
+    <button id="watchBtn" class="watch-ad" onclick="watchAd()">📺 Watch Ad (+8 SHIB)</button>
     <button class="withdraw" onclick="openWithdraw()">💸 Withdraw</button>
 
     <h3>🏆 Top Users</h3>
@@ -34,13 +39,13 @@
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHFMeqk5YDai9_e4g6oXljLHvGm6KF7ANUd8lSxSaLIZsAVZBh7fXXJ7gQM6mMiCgE/exec";
         const SECRET_KEY = "Elfaidasany";
 
-        // Ambil UID dari parameter URL
+        const watchBtn = document.getElementById("watchBtn");
+
         const urlParams = new URLSearchParams(window.location.search);
         const telegramId = urlParams.get("uid");
 
         async function getUserData() {
             try {
-                // Ambil saldo
                 const res = await fetch(`${APPS_SCRIPT_URL}?secret=${SECRET_KEY}&action=get_balance&telegram_id=${telegramId}`);
                 const data = await res.json();
                 document.getElementById("user-info").innerText = `👋 Hello, ${data.username}`;
@@ -64,19 +69,28 @@
         }
 
         async function watchAd() {
-            // TODO: Integrasi Monetag atau iklan lainnya
-            alert("Ad watched! +8 SHIB added.");
-            await fetch(APPS_SCRIPT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    secret: SECRET_KEY,
-                    action: "add_balance",
-                    telegram_id: telegramId,
-                    amount: 8
-                })
-            });
-            getUserData();
+            try {
+                // Disable tombol selama 15 detik
+                watchBtn.disabled = true;
+                await show_9682710();
+                await fetch(APPS_SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        secret: SECRET_KEY,
+                        action: "add_balance",
+                        telegram_id: telegramId,
+                        amount: 8
+                    })
+                });
+                alert("✅ Ad finished! +8 SHIB added.");
+                getUserData();
+            } catch (err) {
+                console.error("Ad error:", err);
+                alert("❌ Ad failed or was skipped.");
+            } finally {
+                setTimeout(() => watchBtn.disabled = false, 15000);
+            }
         }
 
         function openWithdraw() {
@@ -84,52 +98,41 @@
             const email = prompt("Enter your Binance email:");
             const amount = parseInt(prompt("Enter amount to withdraw:"));
 
+            if (!username || !email || isNaN(amount)) {
+                alert("❌ All fields are required.");
+                return;
+            }
             if (amount < 120) {
                 alert("❌ Minimum withdraw is 120 SHIB.");
                 return;
             }
 
-            fetch(APPS_SCRIPT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    secret: SECRET_KEY,
-                    action: "withdraw",
-                    telegram_id: telegramId,
-                    username: username,
-                    email: email,
-                    amount: amount
+            // Tampilkan iklan popup sebelum kirim withdraw
+            show_9682710('pop').then(() => {
+                fetch(APPS_SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        secret: SECRET_KEY,
+                        action: "withdraw",
+                        telegram_id: telegramId,
+                        username: username,
+                        email: email,
+                        amount: amount
+                    })
                 })
-            })
-            .then(() => alert("✅ Withdraw request sent!"))
-            .catch(err => console.error(err));
+                .then(() => alert("✅ Withdraw request sent!"))
+                .catch(err => console.error(err));
+            }).catch(e => {
+                console.error("Popup ad error:", e);
+                alert("❌ Withdraw cancelled. Ad not completed.");
+            });
         }
-      // Event listeners tombol
-  document.getElementById('watchAdBtn').addEventListener('click', () => {
-    // Show ad and reward only after ad finishes
-    show_9682710().then(() => {
-      rewardShib(8);
-    }).catch((err) => {
-      console.error('Ad error:', err);
-      alert('Ad failed or was skipped.');
-    });
-  });
 
-  document.getElementById('withdrawBtn').addEventListener('click', withdraw);
-
-  // Init
-  window.onload = () => {
-    userId = getUserIdFromUrl();
-    loadUserData();
-    loadBalance();
-    loadLeaderboard();
-  };
-      
-       // Load data awal
+        // Load data awal
         getUserData();
         loadLeaderboard();
         loadLatestWithdrawals();
     </script>
 </body>
 </html>
-
