@@ -1,138 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Shiba Inu Reward</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Monetag Ad SDK -->
-    <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
-
-    <style>
-        body { font-family: Arial, sans-serif; background: #ffeed0; text-align: center; padding: 20px; }
-        .logo { width: 100px; margin-top: 20px; }
-        .balance { font-size: 24px; margin: 10px 0; }
-        button { padding: 10px 20px; font-size: 16px; margin: 10px; border-radius: 8px; border: none; cursor: pointer; }
-        .watch-ad { background: #ff9900; color: white; }
-        .withdraw { background: #ff3366; color: white; }
-        .leaderboard, .latest { background: #fff8ee; padding: 10px; border-radius: 8px; margin-top: 20px; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-    </style>
+<meta charset="UTF-8">
+<title>Shiba Inu Reward</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
+<style>
+    body { font-family: Arial, sans-serif; background: #fff4e6; margin: 0; padding: 0; text-align: center; }
+    .container { padding: 20px; }
+    .logo { width: 100px; margin: 10px auto; }
+    .balance { font-size: 20px; margin: 10px 0; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px; border-radius: 8px; border: none; cursor: pointer; }
+    .watch-ad { background: #ff9900; color: white; }
+    .withdraw { background: #ff3366; color: white; }
+    .leaderboard { background: #fff; border-radius: 8px; padding: 10px; margin-top: 15px; }
+    form input { padding: 10px; margin: 5px; width: 80%; max-width: 300px; }
+    .binance-logo { width: 100px; margin-top: 20px; }
+</style>
 </head>
 <body>
-    <img src="https://i.pinimg.com/736x/2b/67/3a/2b673ae57cd8d2c4344945ea6c36bd17.jpg" alt="Shiba Inu" class="logo">
-    <h2>🚀 Shiba Inu Reward</h2>
-    <div id="user-info">Loading...</div>
-    <div class="balance">💰 Balance: <span id="balance">0</span> SHIB</div>
-    <button id="watchBtn" class="watch-ad" onclick="watchAd()">📺 Watch Ad (+8 SHIB)</button>
-    <button class="withdraw" onclick="openWithdraw()">💸 Withdraw</button>
+<div class="container" id="login-page">
+    <h2>🔑 Login</h2>
+    <form id="loginForm">
+        <input type="text" id="name" placeholder="Your Name" required><br>
+        <input type="email" id="email" placeholder="Binance/FaucetPay Email" required><br>
+        <button type="submit">Login</button>
+    </form>
+</div>
 
-    <h3>🏆 Top Users</h3>
+<div class="container" id="main-page" style="display:none;">
+    <img src="https://i.pinimg.com/736x/2b/67/3a/2b673ae57cd8d2c4344945ea6c36bd17.jpg" class="logo">
+    <h2>🚀 Welcome, <span id="username"></span></h2>
+    <div class="balance">💰 Balance: <span id="balance">0</span> SHIB</div>
+    <button class="watch-ad" id="watchBtn">📺 Watch Ad (+8 SHIB)</button>
+
+    <h3>🏆 Top 10 Earners</h3>
     <div class="leaderboard" id="leaderboard">Loading...</div>
 
-    <h3>🆕 Latest Withdrawals</h3>
-    <div class="latest" id="latest">Loading...</div>
+    <h3>💸 Withdraw</h3>
+    <form id="withdrawForm">
+        <input type="text" id="w_name" placeholder="Your Name" required><br>
+        <input type="email" id="w_email" placeholder="Binance/FaucetPay Email" required><br>
+        <input type="number" id="w_amount" placeholder="Amount (min 120)" required><br>
+        <button type="submit" class="withdraw">Withdraw</button>
+    </form>
 
-    <p>One day $SHIB will hit $1... ✨</p>
+    <img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.svg" class="binance-logo">
+</div>
 
-    <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHFMeqk5YDai9_e4g6oXljLHvGm6KF7ANUd8lSxSaLIZsAVZBh7fXXJ7gQM6mMiCgE/exec";
-        const SECRET_KEY = "Elfaidasany";
+<script>
+const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL";
+const SECRET_KEY = "YOUR_SECRET_KEY";
+let currentUser = {};
 
-        const watchBtn = document.getElementById("watchBtn");
+document.getElementById("loginForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const telegramId = urlParams.get("uid");
+    // Simpan ke sheet
+    await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            secret: SECRET_KEY,
+            action: "register",
+            name: name,
+            email: email
+        })
+    });
 
-        async function getUserData() {
-            try {
-                const res = await fetch(`${APPS_SCRIPT_URL}?secret=${SECRET_KEY}&action=get_balance&telegram_id=${telegramId}`);
-                const data = await res.json();
-                document.getElementById("user-info").innerText = `👋 Hello, ${data.username}`;
-                document.getElementById("balance").innerText = data.balance;
-            } catch (err) {
-                console.error(err);
-                document.getElementById("user-info").innerText = "❌ Failed to load user.";
-            }
-        }
+    currentUser = { name, email };
+    document.getElementById("username").innerText = name;
+    loadBalance();
+    loadLeaderboard();
+    document.getElementById("login-page").style.display = "none";
+    document.getElementById("main-page").style.display = "block";
+});
 
-        async function loadLeaderboard() {
-            const res = await fetch(`${APPS_SCRIPT_URL}?secret=${SECRET_KEY}&action=top10`);
-            const topUsers = await res.json();
-            document.getElementById("leaderboard").innerHTML = topUsers.map(u => `${u.username} — ${u.balance} SHIB`).join("<br>");
-        }
+async function loadBalance(){
+    const res = await fetch(`${APPS_SCRIPT_URL}?secret=${SECRET_KEY}&action=get_balance&email=${encodeURIComponent(currentUser.email)}`);
+    const data = await res.json();
+    document.getElementById("balance").innerText = data.balance;
+}
 
-        async function loadLatestWithdrawals() {
-            const res = await fetch(`${APPS_SCRIPT_URL}?secret=${SECRET_KEY}&action=latest`);
-            const latest = await res.json();
-            document.getElementById("latest").innerHTML = latest.map(w => `${w.username} — ${w.amount} SHIB`).join("<br>");
-        }
+async function loadLeaderboard(){
+    const res = await fetch(`${APPS_SCRIPT_URL}?secret=${SECRET_KEY}&action=top10`);
+    const topUsers = await res.json();
+    document.getElementById("leaderboard").innerHTML = topUsers.map(u => `${u.name} — ${u.balance} SHIB`).join("<br>");
+}
 
-        async function watchAd() {
-            try {
-                // Disable tombol selama 15 detik
-                watchBtn.disabled = true;
-                await show_9682710();
-                await fetch(APPS_SCRIPT_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        secret: SECRET_KEY,
-                        action: "add_balance",
-                        telegram_id: telegramId,
-                        amount: 8
-                    })
-                });
-                alert("✅ Ad finished! +8 SHIB added.");
-                getUserData();
-            } catch (err) {
-                console.error("Ad error:", err);
-                alert("❌ Ad failed or was skipped.");
-            } finally {
-                setTimeout(() => watchBtn.disabled = false, 15000);
-            }
-        }
+document.getElementById("watchBtn").addEventListener("click", async () => {
+    try {
+        document.getElementById("watchBtn").disabled = true;
+        await show_9682710();
+        await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                secret: SECRET_KEY,
+                action: "add_balance",
+                email: currentUser.email,
+                amount: 8
+            })
+        });
+        alert("+8 SHIB added!");
+        loadBalance();
+    } catch (err) {
+        alert("Ad failed or skipped.");
+    } finally {
+        setTimeout(() => document.getElementById("watchBtn").disabled = false, 15000);
+    }
+});
 
-        function openWithdraw() {
-            const username = prompt("Enter your Telegram username (without @):");
-            const email = prompt("Enter your Binance email:");
-            const amount = parseInt(prompt("Enter amount to withdraw:"));
+document.getElementById("withdrawForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const name = document.getElementById("w_name").value.trim();
+    const email = document.getElementById("w_email").value.trim();
+    const amount = parseInt(document.getElementById("w_amount").value);
 
-            if (!username || !email || isNaN(amount)) {
-                alert("❌ All fields are required.");
-                return;
-            }
-            if (amount < 120) {
-                alert("❌ Minimum withdraw is 120 SHIB.");
-                return;
-            }
+    if(amount < 120){ alert("Minimum withdraw is 120 SHIB."); return; }
 
-            // Tampilkan iklan popup sebelum kirim withdraw
-            show_9682710('pop').then(() => {
-                fetch(APPS_SCRIPT_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        secret: SECRET_KEY,
-                        action: "withdraw",
-                        telegram_id: telegramId,
-                        username: username,
-                        email: email,
-                        amount: amount
-                    })
-                })
-                .then(() => alert("✅ Withdraw request sent!"))
-                .catch(err => console.error(err));
-            }).catch(e => {
-                console.error("Popup ad error:", e);
-                alert("❌ Withdraw cancelled. Ad not completed.");
-            });
-        }
-
-        // Load data awal
-        getUserData();
-        loadLeaderboard();
-        loadLatestWithdrawals();
-    </script>
+    // Iklan popup sebelum withdraw
+    show_9682710('pop').then(async () => {
+        await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                secret: SECRET_KEY,
+                action: "withdraw",
+                name: name,
+                email: email,
+                amount: amount
+            })
+        });
+        alert("Withdraw request sent!");
+        loadBalance();
+    }).catch(() => {
+        alert("Withdraw cancelled. Ad not completed.");
+    });
+});
+</script>
 </body>
 </html>
