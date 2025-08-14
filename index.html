@@ -136,7 +136,7 @@
     /**
      * CONFIG — replace with your own
      */
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9R4sl2rRVW2nYtQcVR84g-u_G7aa2S0vdj_tdtcCA4icFpfF1-Gezg3QuTH6J0Is/exec"; // e.g. https://script.google.com/macros/s/XXX/exec
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbympqBUTEYv1CtFbAwNn8k725uviA8fxtWDulteGRqHrT3-FGAB29OpmqJ_5BNo1mY/exec"; // e.g. https://script.google.com/macros/s/XXX/exec
     const SECRET_KEY = "Elfaidasany3";                 // must match in Apps Script
 
     /**
@@ -208,7 +208,7 @@
       if(!name||!email) return;
 
       // Register (idempotent: create if not exists)
-      await apiPost({ action:'register', name, email });
+      try{ await apiPost({ action:'register', name, email }); }catch(_){ /* ignore */ }
 
       currentUser = { name, email };
       saveSession(currentUser);
@@ -230,34 +230,45 @@
     $('refreshBtn').addEventListener('click', ()=> loadBalance());
 
     /**
-     * Watch Ads (+8 SHIB) using rewarded popup
+     * Watch Ads (+8 SHIB) — Rewarded interstitial requested
      */
     const watchBtn = $('watchBtn');
     watchBtn.addEventListener('click', async ()=>{
       if(!currentUser) return alert('Please login first.');
       watchBtn.disabled = true;
       try{
-        await show_9682710('pop'); // <— your requested popup script
+        // Rewarded interstitial
+        await show_9682710();
+        alert('You have seen an ad!');
         const res = await apiPost({ action:'add_balance', email: currentUser.email, amount: 8 });
         if(res && res.success){
           await loadBalance();
           alert('✅ +8 SHIB added!');
         }else{
-          alert('Balance update failed.');
+          await loadBalance(); // refresh anyway if backend already updated
         }
       }catch(e){
         console.log('Ad error', e);
         alert('❌ Ad failed or was skipped.');
       }finally{
-        // simple anti-spam cooldown
         setTimeout(()=>{ watchBtn.disabled = false; }, 15000);
       }
     });
 
     /**
-     * Withdraw form (min 120)
+     * Withdraw form (min 120) — Show rewarded popup BEFORE filling the form (first focus)
      */
-    $('withdrawForm').addEventListener('submit', async (e)=>{
+    let withdrawAdShown = false;
+    const withdrawForm = $('withdrawForm');
+    withdrawForm.addEventListener('focusin', async (ev)=>{
+      if(withdrawAdShown) return;
+      try{
+        await show_9682710('pop');
+      }catch(e){ /* ignore ad fail */ }
+      withdrawAdShown = true; // only once per page load
+    });
+
+    withdrawForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
       if(!currentUser) return alert('Please login first.');
       const name = $('w_name').value.trim();
@@ -296,4 +307,3 @@
   </script>
 </body>
 </html>
-
