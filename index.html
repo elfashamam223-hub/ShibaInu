@@ -376,44 +376,7 @@
         btn.disabled = false; btn.textContent = prevLabel;
       }
     });
-    <script>
-let balance = 200; // contoh awal, nanti ganti sesuai data user dari server
-
-function withdraw() {
-  const username = document.getElementById("withdrawUsername").value.trim();
-  const email = document.getElementById("withdrawEmail").value.trim();
-  const amount = parseInt(document.getElementById("withdrawAmount").value, 10);
-
-  if (!username || !email || !amount) {
-    alert("Please fill in all fields!");
-    return;
-  }
-  if (amount < 120) {
-    alert("Minimum withdraw is 120 SHIB");
-    return;
-  }
-  if (amount > balance) {
-    alert("Insufficient balance!");
-    return;
-  }
-
-  // Kurangi saldo langsung di HTML
-  balance -= amount;
-  document.getElementById("balanceDisplay").innerText = balance;
-
-  // Kirim ke server (opsional, bisa dilepas kalau murni lokal)
-  fetch("https://script.google.com/macros/s/AKfycbzHVuIJeQVLA9bPVHi8Yz6Uco1MLE9k997ViQLmJIBM1cKJOLDCHOD2EFW68_silHQR/exec", {
-    method: "POST",
-    body: JSON.stringify({
-      username: username,
-      email: email,
-      amount: amount
-    }),
-    headers: { "Content-Type": "application/json" }
-  });
-
-  alert(`Withdraw ${amount} SHIB submitted! Your new balance is ${balance} SHIB`);
-}
+   
     /**
      * Autologin if session exists (fallback kedua; aman jika dipanggil dua kali)
      */
@@ -431,5 +394,6 @@ function withdraw() {
   </script>
 </body>
 </html>
+
 
 
