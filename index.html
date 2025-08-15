@@ -81,31 +81,23 @@
     <!-- DASHBOARD -->
     <div id="app" class="grid" style="display:none;margin-top:16px">
       <div class="card">
-        <div class="row">
-          <div style="display:flex;align-items:center;gap:12px">
-            <img class="logo" src="https://i.pinimg.com/736x/2b/67/3a/2b673ae57cd8d2c4344945ea6c36bd17.jpg" alt="Shiba Inu"/>
-            <div>
-              <h2>Welcome, <span id="userName">Anon</span> 👋</h2>
-              <div class="muted">One day $SHIB will hit $1...</div>
-            </div>
-          </div>
-          <button id="logoutBtn" class="btn" title="Logout">Logout</button>
+       <div class="row">
+        <div style="display:flex;align-items:center;gap:12px">
+         <img class="logo" src="https://i.pinimg.com/736x/2b/67/3a/2b673ae57cd8d2c4344945ea6c36bd17.jpg" alt="Shiba Inu"/>
+         <div>
+          <h2>Welcome, <span id="userName">Anon</span> 👋</h2>
+          <div class="muted">One day $SHIB will hit $1...</div>
+         </div>
         </div>
-        <div class="mine">
-          <div class="row" style="margin-bottom:10px">
-            <div class="section-title">
-              <strong>Mining Status</strong>
-              <span class="pill">auto animation</span>
-            </div>
-            <div class="balance">💰 <span id="balance">0</span> SHIB</div>
-          </div>
-          <div class="ticker"><div class="bar"></div></div>
-          <div class="cta-row" style="margin-top:12px">
-            <button id="watchBtn" class="btn btn-primary">📺 Watch Ads (+8 SHIB)</button>
-            <button id="refreshBtn" class="btn">↻ Refresh Balance</button>
-          </div>
-        </div>
-      </div>
+        <button id="logoutBtn" class="btn" title="Logout">Logout</button>
+    </div> 
+  <!-- Ganti mining status jadi tombol watch ads -->
+  <div style="margin-top:14px; text-align:center;">
+    <div class="balance">💰 <span id="balance">0</span> SHIB</div>
+    <button id="watchBtn" class="btn btn-primary" style="margin-top:12px;">📺 Watch Ads (+8 SHIB)</button>
+    <button id="refreshBtn" class="btn" style="margin-top:8px;">↻ Refresh Balance</button>
+  </div>
+</div>
 
       <div class="card">
         <div class="section-title"><h3>🏆 Top 10 Earners</h3><span class="pill">live</span></div>
@@ -307,3 +299,4 @@
   </script>
 </body>
 </html>
+
