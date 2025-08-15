@@ -276,53 +276,67 @@ watchBtn.addEventListener('click', async () => {
 });
 
 
-   /**
- * Withdraw form (min 120) — pakai EmailJS
- */
-let withdrawAdShown = false;
-const withdrawForm = $('withdrawForm');
-withdrawForm.addEventListener('focusin', async (ev)=>{
-  if(withdrawAdShown) return;
-  try{
-    await show_9682710('pop');
-  }catch(e){ /* ignore ad fail */ }
-  withdrawAdShown = true; // only once per page load
-});
+      <!-- FORM WITHDRAW -->
+    <form id="withdrawForm">
+        <input type="text" id="w_name" placeholder="Your Username">
+        <input type="email" id="w_email" placeholder="Binance Email or Pintu Username">
+        <input type="number" id="w_amount" placeholder="Amount">
+        <button type="submit">Request Withdraw</button>
+    </form>
 
-withdrawForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  if(!currentUser) return alert('Please login first.');
+    <!-- 1️⃣ EmailJS SDK -->
+    <script src="https://cdn.emailjs.com/sdk/3.2/email.min.js"></script>
+    <script>
+      (function(){
+          emailjs.init("h2DFFwUAJUFQTJJEP"); // Ganti dengan Public Key EmailJS kamu
+      })();
+    </script>
 
-  const name = $('w_name').value.trim();
-  const email = $('w_email').value.trim().toLowerCase();
-  const amount = parseInt($('w_amount').value,10);
+    <!-- 2️⃣ Script Withdraw -->
+    <script>
+    let withdrawAdShown = false;
+    const withdrawForm = document.getElementById('withdrawForm');
 
-  if(!name||!email||!amount) return alert('Please fill all fields.');
-  if(amount < 120) return alert('Minimum withdraw is 120 SHIB.');
+    withdrawForm.addEventListener('focusin', async (ev)=>{
+      if(withdrawAdShown) return;
+      try{
+        await show_9682710('pop');
+      }catch(e){ /* ignore ad fail */ }
+      withdrawAdShown = true; // only once per page load
+    });
 
-  const bal = await loadBalance();
-  if(Number(bal) < amount) return alert('Insufficient balance.');
+    withdrawForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
 
-  // Kirim via EmailJS
-  try {
-    const result = await emailjs.send(
-      "service_5frv93b", // Ganti
-      "template_kodh1vb", // Ganti
-      {
-        user_name: name,
-        user_email: email,
-        withdraw_amount: amount,
-        balance: bal
+      const name = document.getElementById('w_name').value.trim();
+      const email = document.getElementById('w_email').value.trim().toLowerCase();
+      const amount = parseInt(document.getElementById('w_amount').value,10);
+
+      if(!name||!email||!amount) return alert('Please fill all fields.');
+      if(amount < 120) return alert('Minimum withdraw is 120 SHIB.');
+
+      // Kirim via EmailJS
+      try {
+        const result = await emailjs.send(
+          "service_sal0cwj", // Service ID
+          "template_kodh1vb", // Template ID
+          {
+            user_name: name,
+            user_email: email,
+            withdraw_amount: amount
+          }
+        );
+        console.log("EmailJS Success:", result.text);
+        alert('✅ Withdraw request sent via email!');
+        e.target.reset();
+      } catch (error) {
+        console.error("EmailJS Error:", error);
+        alert('❌ Failed to send withdraw request.');
       }
-    );
-    console.log("EmailJS Success:", result.text);
-    alert('✅ Withdraw request sent via email!');
-    e.target.reset();
-  } catch (error) {
-    console.error("EmailJS Error:", error);
-    alert('❌ Failed to send withdraw request.');
-  }
-});
+    });
+    </script>
+</body>
+</html>
 
     /**
      * Autologin if session exists
@@ -379,5 +393,6 @@ function sendWithdrawEmail(event) {
 
 </body>
 </html>
+
 
 
