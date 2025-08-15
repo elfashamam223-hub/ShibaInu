@@ -367,6 +367,12 @@
           try { await apiPost({ action:'withdraw', name, email, amount }); } catch(_) {}
         }
 
+         // ↓ tambahan: kurangi saldo di localStorage dan update UI
+    let newBalance = bal - amount;
+    if (newBalance < 0) newBalance = 0;
+    localStorage.setItem('shib_balance', newBalance);
+    $('balance').textContent = newBalance;
+
         toast('Withdraw request sent to admin ✅');
         e.target.reset();
       } catch (err) {
@@ -394,6 +400,7 @@
   </script>
 </body>
 </html>
+
 
 
 
