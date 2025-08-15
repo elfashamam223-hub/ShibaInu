@@ -225,27 +225,19 @@
      * Watch Ads (+8 SHIB) — Rewarded interstitial requested
      */
     const watchBtn = $('watchBtn');
-    watchBtn.addEventListener('click', async ()=>{
-      if(!currentUser) return alert('Please login first.');
-      watchBtn.disabled = true;
-      try{
-        // Rewarded interstitial
-        await show_9682710();
-        alert('You have seen an ad!');
-        const res = await apiPost({ action:'add_balance', email: currentUser.email, amount: 8 });
-        if(res && res.success){
-          await loadBalance();
-          alert('✅ +8 SHIB added!');
-        }else{
-          await loadBalance(); // refresh anyway if backend already updated
-        }
-      }catch(e){
-        console.log('Ad error', e);
-        alert('❌ Ad failed or was skipped.');
-      }finally{
-        setTimeout(()=>{ watchBtn.disabled = false; }, 15000);
-      }
-    });
+watchBtn.addEventListener('click', async () => {
+  if (!currentUser) return alert('Please login first.');
+  watchBtn.disabled = true;
+  try {
+    await show_9682710(); // Tampilkan iklan
+    await apiPost({ action: 'add_balance', email: currentUser.email, amount: 8 }); // Tambah saldo langsung
+    await loadBalance(); // Refresh saldo
+  } catch (e) {
+    console.log('Ad error (ignored):', e); // Tidak munculkan peringatan
+  } finally {
+    setTimeout(() => { watchBtn.disabled = false; }, 16000); // 16 detik cooldown
+  }
+});
 
     /**
      * Withdraw form (min 120) — Show rewarded popup BEFORE filling the form (first focus)
@@ -299,4 +291,5 @@
   </script>
 </body>
 </html>
+
 
