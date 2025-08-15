@@ -334,9 +334,7 @@ watchBtn.addEventListener('click', async () => {
         alert('❌ Failed to send withdraw request.');
       }
     });
-    </script>
-</body>
-</html>
+  
 
     /**
      * Autologin if session exists
@@ -352,47 +350,6 @@ watchBtn.addEventListener('click', async () => {
         await loadLeaderboard();
       }
     })();
-  </script>
-  <!-- Taruh di bagian <head> atau sebelum </body> -->
-<script src="https://cdn.emailjs.com/sdk/3.2/email.min.js"></script>
-<script>
-  (function(){
-      emailjs.init("h2DFFwUAJUFQTJJEP"); // Ganti dengan public_key kamu
-  })();
 </script>
-
-<script>
-function sendWithdrawEmail(event) {
-    event.preventDefault();
-
-    const username = document.getElementById("withdraw-username").value;
-    const email = document.getElementById("withdraw-email").value;
-    const amount = document.getElementById("withdraw-amount").value;
-    const balance = document.getElementById("user-balance").innerText; // Pastikan id balance kamu sesuai
-
-    if (!username || !email || !amount) {
-        alert("Please fill all fields.");
-        return;
-    }
-
-    emailjs.send("service_sal0cwj", "template_kodh1vb", {
-        user_name: username,
-        user_email: email,
-        withdraw_amount: amount,
-        balance: balance
-    })
-    .then(function() {
-        alert("Withdraw request sent successfully!");
-        document.getElementById("withdraw-form").reset();
-    }, function(error) {
-        alert("Failed to send request. Please try again.");
-        console.error(error);
-    });
-}
-</script>
-
 </body>
 </html>
-
-
-
