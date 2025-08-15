@@ -171,12 +171,37 @@
      * Load Balance + Leaderboard
      */
     async function loadBalance(){
-      if(!currentUser) return;
-      const data = await apiGet({ action:'get_balance', email: currentUser.email });
-      const bal = (data && typeof data.balance !== 'undefined') ? data.balance : 0;
-      $('balance').textContent = bal;
-      return bal;
+  if(!currentUser) return;
+  // Ambil saldo dari localStorage, kalau ada
+  const localBal = localStorage.getItem('shib_balance');
+  if(localBal !== null){
+    $('balance').textContent = localBal;
+    return parseInt(localBal, 10);
+  }
+  // Kalau belum ada, tetap cek dari Sheet
+  const data = await apiGet({ action:'get_balance', email: currentUser.email });
+  const bal = (data && typeof data.balance !== 'undefined') ? data.balance : 0;
+  $('balance').textContent = bal;
+  return bal;
+}
+
+(async function boot(){
+  const session = loadSession();
+  if(session && session.email){
+    currentUser = session;
+    $('userName').textContent = session.name;
+    hide($('login'));
+    show($('app'));
+    // Cek saldo dari localStorage dulu
+    const localBal = localStorage.getItem('shib_balance');
+    if(localBal !== null){
+      $('balance').textContent = localBal;
+    } else {
+      await loadBalance();
     }
+    await loadLeaderboard();
+  }
+})();
 
     async function loadLeaderboard(){
       const list = $('leaderboard');
@@ -222,22 +247,34 @@
     $('refreshBtn').addEventListener('click', ()=> loadBalance());
 
     /**
-     * Watch Ads (+8 SHIB) — Rewarded interstitial requested
-     */
-    const watchBtn = $('watchBtn');
+ * Watch Ads (+8 SHIB) — lokal saja, tidak ke Sheet
+ */
+const watchBtn = $('watchBtn');
 watchBtn.addEventListener('click', async () => {
   if (!currentUser) return alert('Please login first.');
   watchBtn.disabled = true;
+
   try {
-    await show_9682710(); // Tampilkan iklan
-    await apiPost({ action: 'add_balance', email: currentUser.email, amount: 8 }); // Tambah saldo langsung
-    await loadBalance(); // Refresh saldo
+    await show_9682710(); // tetap tampilkan iklan
+    alert('✅ +8 SHIB added!');
+
+    // Ambil saldo di tampilan
+    let currentBalance = parseInt($('balance').textContent, 10) || 0;
+    currentBalance += 8;
+
+    // Simpan di localStorage
+    localStorage.setItem('shib_balance', currentBalance);
+
+    // Update UI
+    $('balance').textContent = currentBalance;
   } catch (e) {
-    console.log('Ad error (ignored):', e); // Tidak munculkan peringatan
+    console.log('Ad error', e);
+    alert('❌ Ad failed or was skipped.');
   } finally {
-    setTimeout(() => { watchBtn.disabled = false; }, 16000); // 16 detik cooldown
+    setTimeout(() => { watchBtn.disabled = false; }, 16000);
   }
 });
+
 
     /**
      * Withdraw form (min 120) — Show rewarded popup BEFORE filling the form (first focus)
@@ -291,6 +328,7 @@ watchBtn.addEventListener('click', async () => {
   </script>
 </body>
 </html>
+
 
 
 
