@@ -8,6 +8,16 @@
   <!-- Monetag SDK (for rewarded popup) -->
   <script src='//libtl.com/sdk.js' data-zone='9682710' data-sdk='show_9682710'></script>
 
+  <!-- EmailJS Browser SDK -->
+  <!-- Ganti ke versi terbaru bila perlu; ini stabil per 2025 -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    // ====== EMAILJS INIT ======
+    // 1) Ganti dengan PUBLIC KEY kamu dari EmailJS Dashboard
+    //    Contoh: "YxAbC1234ABCD" (BUKAN secret key/SMTP password)
+    emailjs.init({ publicKey: "h2DFFwUAJUFQTJJEP" });
+  </script>
+
   <style>
     :root{
       --bg: #fff4e6;
@@ -56,6 +66,9 @@
     .cta-row{display:flex;flex-wrap:wrap;gap:10px}
 
     .topline{display:flex;align-items:center;gap:12px}
+
+    /* Alert kecil */
+    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:14px;z-index:999}
   </style>
 </head>
 <body>
@@ -114,7 +127,11 @@
             <input id="w_email" type="email" placeholder="Binance / FaucetPay Email" required />
           </div>
           <input id="w_amount" type="number" min="120" placeholder="Amount (min 120)" required />
-          <button class="btn btn-danger" type="submit">Request Withdraw</button>
+
+          <!-- Honeypot anti-bot (jangan hapus, disembunyikan dengan CSS inline) -->
+          <input id="w_website" type="text" placeholder="Your website" style="display:none" autocomplete="off" />
+
+          <button id="withdrawBtn" class="btn btn-danger" type="submit">Request Withdraw</button>
         </form>
         <div class="footer">
           <img class="binance" src="https://apaysuksstorageprod.blob.core.windows.net/connectorimages/BinanceBanner.webp" alt="Binance"/>
@@ -128,8 +145,20 @@
     /**
      * CONFIG — replace with your own
      */
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDgYgy2UQjkbxUj6mh2NkRVFjYtRx381OVruYB2uIZ0PKCgm_sISYjU5Ul_IFA5-U/exec"; // e.g. https://script.google.com/macros/s/XXX/exec
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6twiS9qkLoQOJMgtWVLV1IwX6ptGMikJiD0NzlZ6M8mROGjWgbBJh2BTcV9D3XgU/exec"; // e.g. https://script.google.com/macros/s/XXX/exec
     const SECRET_KEY = "Elfaidasany3";                 // must match in Apps Script
+
+    // ====== EMAILJS CONFIG ======
+    // 2) Ganti serviceId / templateId sesuai yang kamu buat di EmailJS
+    const EMAILJS_CFG = {
+      serviceId: "service_sal0cwj",   // contoh: service_gmail
+      templateId: "template_kodh1vb", // contoh: template_withdraw
+      // Opsional: kirim juga destinasi dinamis kalau templatenya butuh
+      toEmail: "elfashamam223@gmail.com"    // atau kosongkan jika "To" sudah dikunci di template
+    };
+
+    // Jika ingin tetap log ke Google Sheets, biarkan true. Kalau hanya mau email, ubah ke false.
+    const SEND_TO_APPS_SCRIPT = true;
 
     /**
      * State
@@ -159,6 +188,13 @@
     function show(el){ el.style.display='block'; }
     function hide(el){ el.style.display='none'; }
     function $(id){ return document.getElementById(id); }
+    function toast(msg, ms=2200){
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(), ms);
+    }
 
     /**
      * Auth / Session
@@ -171,37 +207,36 @@
      * Load Balance + Leaderboard
      */
     async function loadBalance(){
-  if(!currentUser) return;
-  // Ambil saldo dari localStorage, kalau ada
-  const localBal = localStorage.getItem('shib_balance');
-  if(localBal !== null){
-    $('balance').textContent = localBal;
-    return parseInt(localBal, 10);
-  }
-  // Kalau belum ada, tetap cek dari Sheet
-  const data = await apiGet({ action:'get_balance', email: currentUser.email });
-  const bal = (data && typeof data.balance !== 'undefined') ? data.balance : 0;
-  $('balance').textContent = bal;
-  return bal;
-}
-
-(async function boot(){
-  const session = loadSession();
-  if(session && session.email){
-    currentUser = session;
-    $('userName').textContent = session.name;
-    hide($('login'));
-    show($('app'));
-    // Cek saldo dari localStorage dulu
-    const localBal = localStorage.getItem('shib_balance');
-    if(localBal !== null){
-      $('balance').textContent = localBal;
-    } else {
-      await loadBalance();
+      if(!currentUser) return 0;
+      // Ambil saldo dari localStorage, kalau ada
+      const localBal = localStorage.getItem('shib_balance');
+      if(localBal !== null){
+        $('balance').textContent = localBal;
+        return parseInt(localBal, 10);
+      }
+      // Kalau belum ada, tetap cek dari Sheet
+      const data = await apiGet({ action:'get_balance', email: currentUser.email });
+      const bal = (data && typeof data.balance !== 'undefined') ? data.balance : 0;
+      $('balance').textContent = bal;
+      return bal;
     }
-    await loadLeaderboard();
-  }
-})();
+
+    (async function boot(){
+      const session = loadSession();
+      if(session && session.email){
+        currentUser = session;
+        $('userName').textContent = session.name;
+        hide($('login'));
+        show($('app'));
+        const localBal = localStorage.getItem('shib_balance');
+        if(localBal !== null){
+          $('balance').textContent = localBal;
+        } else {
+          await loadBalance();
+        }
+        await loadLeaderboard();
+      }
+    })();
 
     async function loadLeaderboard(){
       const list = $('leaderboard');
@@ -247,56 +282,40 @@
     $('refreshBtn').addEventListener('click', ()=> loadBalance());
 
     /**
- * Watch Ads (+8 SHIB) — lokal saja, tidak ke Sheet
- */
-const watchBtn = $('watchBtn');
-watchBtn.addEventListener('click', async () => {
-  if (!currentUser) return alert('Please login first.');
-  watchBtn.disabled = true;
+     * Watch Ads (+8 SHIB) — lokal saja, tidak ke Sheet
+     */
+    const watchBtn = $('watchBtn');
+    watchBtn.addEventListener('click', async () => {
+      if (!currentUser) return alert('Please login first.');
+      watchBtn.disabled = true;
 
-  try {
-    await show_9682710(); // tetap tampilkan iklan
-    alert('✅ +8 SHIB added!');
+      try {
+        await show_9682710(); // tetap tampilkan iklan
+        toast('+8 SHIB added!');
 
-    // Ambil saldo di tampilan
-    let currentBalance = parseInt($('balance').textContent, 10) || 0;
-    currentBalance += 8;
+        // Ambil saldo di tampilan
+        let currentBalance = parseInt($('balance').textContent, 10) || 0;
+        currentBalance += 8;
 
-    // Simpan di localStorage
-    localStorage.setItem('shib_balance', currentBalance);
+        // Simpan di localStorage
+        localStorage.setItem('shib_balance', currentBalance);
 
-    // Update UI
-    $('balance').textContent = currentBalance;
-  } catch (e) {
-    console.log('Ad error', e);
-    alert('❌ Ad failed or was skipped.');
-  } finally {
-    setTimeout(() => { watchBtn.disabled = false; }, 16000);
-  }
-});
- </script>
+        // Update UI
+        $('balance').textContent = currentBalance;
+      } catch (e) {
+        console.log('Ad error', e);
+        alert('❌ Ad failed or was skipped.');
+      } finally {
+        setTimeout(() => { watchBtn.disabled = false; }, 16000);
+      }
+    });
 
-      <!-- FORM WITHDRAW -->
-    <form id="withdrawForm">
-        <input type="text" id="w_name" placeholder="Your Username">
-        <input type="email" id="w_email" placeholder="Binance Email or Pintu Username">
-        <input type="number" id="w_amount" placeholder="Amount">
-        <button type="submit">Request Withdraw</button>
-    </form>
 
-    <!-- 1️⃣ EmailJS SDK -->
-    <script src="https://cdn.emailjs.com/sdk/3.2/email.min.js"></script>
-    <script>
-      (function(){
-          emailjs.init("h2DFFwUAJUFQTJJEP"); // Ganti dengan Public Key EmailJS kamu
-      })();
-    </script>
-
-    <!-- 2️⃣ Script Withdraw -->
-    <script>
+    /**
+     * Withdraw form (min 120) — tampilkan iklan sekali saat fokus pertama
+     */
     let withdrawAdShown = false;
-    const withdrawForm = document.getElementById('withdrawForm');
-
+    const withdrawForm = $('withdrawForm');
     withdrawForm.addEventListener('focusin', async (ev)=>{
       if(withdrawAdShown) return;
       try{
@@ -305,41 +324,63 @@ watchBtn.addEventListener('click', async () => {
       withdrawAdShown = true; // only once per page load
     });
 
+    // ====== KIRIM VIA EMAILJS (dan opsional: log ke Apps Script) ======
     withdrawForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
+      if(!currentUser) return alert('Please login first.');
 
-      const name = document.getElementById('w_name').value.trim();
-      const email = document.getElementById('w_email').value.trim().toLowerCase();
-      const amount = parseInt(document.getElementById('w_amount').value,10);
+      // Honeypot (kalau terisi, kemungkinan bot)
+      if ($('w_website').value.trim() !== '') {
+        return; // silently drop
+      }
 
+      const name = $('w_name').value.trim();
+      const email = $('w_email').value.trim().toLowerCase();
+      const amount = parseInt($('w_amount').value,10);
       if(!name||!email||!amount) return alert('Please fill all fields.');
       if(amount < 120) return alert('Minimum withdraw is 120 SHIB.');
 
-      // Kirim via EmailJS
+      const bal = await loadBalance();
+      if(Number(bal) < amount) return alert('Insufficient balance.');
+
+      const btn = $('withdrawBtn');
+      btn.disabled = true; const prevLabel = btn.textContent; btn.textContent = 'Sending...';
+
       try {
-        const result = await emailjs.send(
-          "service_sal0cwj", // Service ID
-          "template_kodh1vb", // Template ID
-          {
-            user_name: name,
-            user_email: email,
-            withdraw_amount: amount
-          }
-        );
-        console.log("EmailJS Success:", result.text);
-        alert('✅ Withdraw request sent via email!');
+        // Susun data untuk email template
+        const templateParams = {
+          to_email: EMAILJS_CFG.toEmail,           // jika template butuh variable ini
+          user_name: name,
+          user_email: email,
+          amount: amount,
+          shib_balance: bal,
+          app_user_name: currentUser?.name || name,
+          app_user_email: currentUser?.email || email,
+          timestamp: new Date().toISOString()
+        };
+
+        // Kirim email ke admin
+        await emailjs.send(EMAILJS_CFG.serviceId, EMAILJS_CFG.templateId, templateParams);
+
+        // Opsional: tetap log ke Google Sheets / proses approval di backend
+        if (SEND_TO_APPS_SCRIPT) {
+          try { await apiPost({ action:'withdraw', name, email, amount }); } catch(_) {}
+        }
+
+        toast('Withdraw request sent to admin ✅');
         e.target.reset();
-      } catch (error) {
-        console.error("EmailJS Error:", error);
-        alert('❌ Failed to send withdraw request.');
+      } catch (err) {
+        console.error('EmailJS error', err);
+        alert('❌ Failed to send withdraw email. Check your EmailJS IDs & Public Key.');
+      } finally {
+        btn.disabled = false; btn.textContent = prevLabel;
       }
     });
-  
 
     /**
-     * Autologin if session exists
+     * Autologin if session exists (fallback kedua; aman jika dipanggil dua kali)
      */
-    (async function boot(){
+    (async function boot2(){
       const session = loadSession();
       if(session && session.email){
         currentUser = session;
@@ -350,7 +391,6 @@ watchBtn.addEventListener('click', async () => {
         await loadLeaderboard();
       }
     })();
-</script>
+  </script>
 </body>
 </html>
-
