@@ -128,7 +128,7 @@
     /**
      * CONFIG — replace with your own
      */
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6twiS9qkLoQOJMgtWVLV1IwX6ptGMikJiD0NzlZ6M8mROGjWgbBJh2BTcV9D3XgU/exec"; // e.g. https://script.google.com/macros/s/XXX/exec
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDgYgy2UQjkbxUj6mh2NkRVFjYtRx381OVruYB2uIZ0PKCgm_sISYjU5Ul_IFA5-U/exec"; // e.g. https://script.google.com/macros/s/XXX/exec
     const SECRET_KEY = "Elfaidasany3";                 // must match in Apps Script
 
     /**
@@ -289,50 +289,27 @@ watchBtn.addEventListener('click', async () => {
       withdrawAdShown = true; // only once per page load
     });
 
-   <form id="withdrawForm">
-  <input type="text" id="name" placeholder="Your Name" required>
-  <input type="email" id="email" placeholder="Your Binance Email" required>
-  <input type="number" id="amount" placeholder="Amount (min 120 SHIB)" required>
-  <button type="submit">Withdraw</button>
-</form>
+    withdrawForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!currentUser) return alert('Please login first.');
+      const name = $('w_name').value.trim();
+      const email = $('w_email').value.trim().toLowerCase();
+      const amount = parseInt($('w_amount').value,10);
+      if(!name||!email||!amount) return alert('Please fill all fields.');
+      if(amount < 120) return alert('Minimum withdraw is 120 SHIB.');
 
-<script>
-  document.getElementById("withdrawForm").addEventListener("submit", function(e) {
-    e.preventDefault();
+      const bal = await loadBalance();
+      if(Number(bal) < amount) return alert('Insufficient balance.');
 
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const amount = document.getElementById("amount").value;
-
-    if (amount < 120) {
-      alert("Minimum withdraw is 120 SHIB");
-      return;
-    }
-
-    fetch("https://script.google.com/macros/s/AKfycbxp-62gWnbkEwDhBH0ZWOhDI-P9hwUryWnEr3LRm9WPa8uQKaqXO__sVC_inG4nVuA/exec", {
-      method: "POST",
-      body: JSON.stringify({
-        action: "withdraw",
-        name: name,
-        email: email,
-        amount: amount
-      }),
-      headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === "success") {
-        alert("Withdraw request submitted!");
-        document.getElementById("withdrawForm").reset();
-      } else {
-        alert("Error: " + data.message);
+      const res = await apiPost({ action:'withdraw', name, email, amount });
+      if(res && res.success){
+        await loadBalance();
+        alert('✅ Withdraw request submitted!');
+        e.target.reset();
+      }else{
+        alert(res && res.error ? ('❌ ' + res.error) : '❌ Withdraw failed');
       }
-    })
-    .catch(err => {
-      alert("Network error: " + err);
     });
-  });
-</script>
 
     /**
      * Autologin if session exists
@@ -351,9 +328,3 @@ watchBtn.addEventListener('click', async () => {
   </script>
 </body>
 </html>
-
-
-
-
-
-
