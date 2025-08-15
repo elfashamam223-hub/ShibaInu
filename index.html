@@ -276,40 +276,53 @@ watchBtn.addEventListener('click', async () => {
 });
 
 
-    /**
-     * Withdraw form (min 120) — Show rewarded popup BEFORE filling the form (first focus)
-     */
-    let withdrawAdShown = false;
-    const withdrawForm = $('withdrawForm');
-    withdrawForm.addEventListener('focusin', async (ev)=>{
-      if(withdrawAdShown) return;
-      try{
-        await show_9682710('pop');
-      }catch(e){ /* ignore ad fail */ }
-      withdrawAdShown = true; // only once per page load
-    });
+   /**
+ * Withdraw form (min 120) — pakai EmailJS
+ */
+let withdrawAdShown = false;
+const withdrawForm = $('withdrawForm');
+withdrawForm.addEventListener('focusin', async (ev)=>{
+  if(withdrawAdShown) return;
+  try{
+    await show_9682710('pop');
+  }catch(e){ /* ignore ad fail */ }
+  withdrawAdShown = true; // only once per page load
+});
 
-    withdrawForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      if(!currentUser) return alert('Please login first.');
-      const name = $('w_name').value.trim();
-      const email = $('w_email').value.trim().toLowerCase();
-      const amount = parseInt($('w_amount').value,10);
-      if(!name||!email||!amount) return alert('Please fill all fields.');
-      if(amount < 120) return alert('Minimum withdraw is 120 SHIB.');
+withdrawForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(!currentUser) return alert('Please login first.');
 
-      const bal = await loadBalance();
-      if(Number(bal) < amount) return alert('Insufficient balance.');
+  const name = $('w_name').value.trim();
+  const email = $('w_email').value.trim().toLowerCase();
+  const amount = parseInt($('w_amount').value,10);
 
-      const res = await apiPost({ action:'withdraw', name, email, amount });
-      if(res && res.success){
-        await loadBalance();
-        alert('✅ Withdraw request submitted!');
-        e.target.reset();
-      }else{
-        alert(res && res.error ? ('❌ ' + res.error) : '❌ Withdraw failed');
+  if(!name||!email||!amount) return alert('Please fill all fields.');
+  if(amount < 120) return alert('Minimum withdraw is 120 SHIB.');
+
+  const bal = await loadBalance();
+  if(Number(bal) < amount) return alert('Insufficient balance.');
+
+  // Kirim via EmailJS
+  try {
+    const result = await emailjs.send(
+      "service_5frv93b", // Ganti
+      "template_kodh1vb", // Ganti
+      {
+        user_name: name,
+        user_email: email,
+        withdraw_amount: amount,
+        balance: bal
       }
-    });
+    );
+    console.log("EmailJS Success:", result.text);
+    alert('✅ Withdraw request sent via email!');
+    e.target.reset();
+  } catch (error) {
+    console.error("EmailJS Error:", error);
+    alert('❌ Failed to send withdraw request.');
+  }
+});
 
     /**
      * Autologin if session exists
@@ -326,5 +339,44 @@ watchBtn.addEventListener('click', async () => {
       }
     })();
   </script>
+  <!-- Taruh di bagian <head> atau sebelum </body> -->
+<script src="https://cdn.emailjs.com/sdk/3.2/email.min.js"></script>
+<script>
+  (function(){
+      emailjs.init("h2DFFwUAJUFQTJJEP"); // Ganti dengan public_key kamu
+  })();
+</script>
+
+<script>
+function sendWithdrawEmail(event) {
+    event.preventDefault();
+
+    const username = document.getElementById("withdraw-username").value;
+    const email = document.getElementById("withdraw-email").value;
+    const amount = document.getElementById("withdraw-amount").value;
+    const balance = document.getElementById("user-balance").innerText; // Pastikan id balance kamu sesuai
+
+    if (!username || !email || !amount) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    emailjs.send("service_5frv93b", "template_kodh1vb", {
+        user_name: username,
+        user_email: email,
+        withdraw_amount: amount,
+        balance: balance
+    })
+    .then(function() {
+        alert("Withdraw request sent successfully!");
+        document.getElementById("withdraw-form").reset();
+    }, function(error) {
+        alert("Failed to send request. Please try again.");
+        console.error(error);
+    });
+}
+</script>
+
 </body>
 </html>
+
