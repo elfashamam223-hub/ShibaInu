@@ -240,7 +240,9 @@
 
     async function loadLeaderboard(){
       const list = $('leaderboard');
-      list.innerHTML = '<li class="muted" style="justify-content:center">Loading...</li>';
+      list.innerHTML = '<li class="muted" style="justify-content:center">1. Mimiami = 22.237 SHIB
+        2. Ayung crypto = 20.018 SHIB
+        3. fahmiZzz = 19.780 SHIB</li>';
       const data = await apiGet({ action:'top10' });
       if(!Array.isArray(data) || !data.length){ list.innerHTML = '<li class="muted" style="justify-content:center">No data</li>'; return; }
       list.innerHTML = data.map((u,i)=>`<li><span>${i+1}. ${escapeHtml(u.name||'Anon')}</span><strong>${Number(u.balance||0)} SHIB</strong></li>`).join('');
@@ -400,6 +402,7 @@
   </script>
 </body>
 </html>
+
 
 
 
