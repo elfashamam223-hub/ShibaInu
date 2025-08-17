@@ -292,7 +292,7 @@
     if(data.period === period){
       top3 = data.top3;
     }
-  }
+  };
 
   // kalau belum ada atau period sudah berubah → acak ulang
   if(!top3){
@@ -303,13 +303,12 @@
     top3.sort((a, b) => b.balance - a.balance);
 
     localStorage.setItem('shib_leaderboard', JSON.stringify({ period, top3 }));
-  }
+  };
 
   // render ke UI (sudah urut sesuai balance)
   list.innerHTML = top3.map((u,i)=>
-    `<li><span>${i+1}. ${escapeHtml(u.name)}</span><strong>${u.balance} SHIB</strong></li>`
-  ).join('');
-}
+ `<li><span>${i+1}. ${escapeHtml(u.name)}</span><strong>${u.balance} SHIB</strong></li>`).join('');
+   };
     /**
      * Login flow
      */
@@ -460,3 +459,4 @@
   </script>
 </body>
 </html>
+
