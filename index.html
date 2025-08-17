@@ -243,72 +243,17 @@
     })();
 
     async function loadLeaderboard(){
-      const STATIC_USERS = [
-    { name: "Mimiami", balance: 22302 },
-    { name: "AyungCrypto", balance: 20040 },
-    { name: "FarizZZ14", balance: 19211 },
-    { name: "RizikMohammad", balance: 18010 },
-    { name: "Daprutt000", balance: 17550 },
-    { name: "PemulungOnline", balance: 17020 },
-    { name: "Narutooh", balance: 16500 },
-    { name: "JohnDeLight", balance: 16080 },
-    { name: "MoonSoon", balance: 15890 },
-    { name: "ArmanZaki", balance: 15500 },
-    { name: "Jackie", balance: 15020 },
-    { name: "AndyyyX", balance: 14900 },
-    { name: "AhmeedAbdullah", balance: 14670 },
-    { name: "AirdropLover", balance: 14500 },
-    { name: "Yaseer12", balance: 14300 },
-    { name: "WilliamPhllips", balance: 14020 },
-    { name: "Sophia", balance: 13890 },
-    { name: "StackerX", balance: 13750 },
-    { name: "LouisMateo", balance: 13600 },
-    { name: "11122LovingBOY", balance: 13500 }
-  ];
-
-  function getCurrentPeriod(){
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth()+1).padStart(2,'0');
-    const d = String(now.getDate()).padStart(2,'0');
-    const h = now.getHours();
-
-    // Tentukan periode: pagi(11) atau malam(0)
-    if(h >= 0 && h < 11){
-      return `${y}-${m}-${d}-00`; // periode jam 00
-    } else {
-      return `${y}-${m}-${d}-11`; // periode jam 11
+      const list = $('leaderboard');
+      list.innerHTML = '<li class="muted" style="justify-content:center">Loading...</li>';
+      const data = await apiGet({ action:'top10' });
+      if(!Array.isArray(data) || !data.length){ list.innerHTML = '<li class="muted" style="justify-content:center">No data</li>'; return; }
+      list.innerHTML = data.map((u,i)=>`<li><span>${i+1}. ${escapeHtml(u.name||'Anon')}</span><strong>${Number(u.balance||0)} SHIB</strong></li>`).join('');
     }
-  }
-    function loadLeaderboard(){
-  const list = $('leaderboard');
-  const period = getCurrentPeriod();
 
-  // cek localStorage
-  const saved = localStorage.getItem('shib_leaderboard');
-  let top3;
-  if(saved){
-    const data = JSON.parse(saved);
-    if(data.period === period){
-      top3 = data.top3;
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
     }
-  };
 
-  // kalau belum ada atau period sudah berubah → acak ulang
-  if(!top3){
-    const shuffled = STATIC_USERS.sort(() => 0.5 - Math.random());
-    top3 = shuffled.slice(0, 3);
-
-    // urutkan berdasarkan saldo terbesar → terkecil
-    top3.sort((a, b) => b.balance - a.balance);
-
-    localStorage.setItem('shib_leaderboard', JSON.stringify({ period, top3 }));
-  };
-
-  // render ke UI (sudah urut sesuai balance)
-  list.innerHTML = top3.map((u,i)=>
- `<li><span>${i+1}. ${escapeHtml(u.name)}</span><strong>${u.balance} SHIB</strong></li>`).join('');
-   };
     /**
      * Login flow
      */
@@ -459,4 +404,3 @@
   </script>
 </body>
 </html>
-
